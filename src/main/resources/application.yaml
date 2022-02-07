@@ -1,0 +1,12 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  h2:
+    console:
+      enabled: true
+  sql:
+    init:
+      data-locations: classpath*:sql/init_data.sql
+      schema-locations: classpath*:sql/schema.sql
