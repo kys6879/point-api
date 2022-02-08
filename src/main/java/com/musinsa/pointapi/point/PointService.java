@@ -21,12 +21,12 @@ public class PointService {
     }
 
     // 포인트 적립
-    // TODO => AOP로 포인트의 정합성 체크 필요
+    // TODO AOP로 포인트의 정합성 체크 필요
     @Transactional
     public PointEntity earnPoint(Integer amount, Long memberId) {
 
-        LocalDateTime now = CommonDateService.getToday();
-        LocalDateTime afterOneYear = CommonDateService.getAfterOneYear(now);
+        LocalDateTime actionAt = CommonDateService.getToday();
+        LocalDateTime expireAt = CommonDateService.getAfterOneYear(actionAt);
 
         MemberEntity memberEntity = this.memberService.findMemberById(memberId);
 
@@ -35,17 +35,23 @@ public class PointService {
                 0L,
                 PointStatusEnum.EARN,
                 amount,
-                now,
-                afterOneYear,
+                actionAt,
+                expireAt,
                 memberEntity
         );
 
-        PointEntity savedPointEntity = pointRepository.save(pointEntity);
-
-        /* 유저 테이블에 UPDATE */
-        this.memberService.increaseMemberPoint(amount,memberId);
-
-        return savedPointEntity;
+        return pointRepository.save(pointEntity);
     }
+
+    // 포인트 사용
+//    public PointEntity usePoint(Integer amount, Long memberId) {
+//
+//        /* 현재로부터 만료일이 가장 가까운 적립된 포인트를 찾는다. */
+//
+//        /* 그 포인트의 만료일을 가져온다. */
+//
+//        /* 가까운 포인트의 만료일을 가지고 포인트를 사용한다. */
+//
+//    }
 
 }

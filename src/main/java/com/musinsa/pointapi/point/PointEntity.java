@@ -1,6 +1,5 @@
 package com.musinsa.pointapi.point;
 
-import com.musinsa.pointapi.common.CommonDateService;
 import com.musinsa.pointapi.member.MemberEntity;
 
 import javax.persistence.*;
@@ -35,6 +34,10 @@ public class PointEntity {
         this.actionAt = actionAt;
         this.expireAt = expireAt;
         this.member = member;
+    }
+
+    public PointEntity() {
+
     }
 
     public Long getId() {

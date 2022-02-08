@@ -46,10 +46,6 @@ public class PointServiceTest {
         given(this.pointRepository.save(any()))
                 .willReturn(mockPointEntity);
 
-        mockMemberEntity.setPoint(mockMemberEntity.getPoint() + amount);
-        given(this.memberService.increaseMemberPoint(amount,mockMemberEntity.getId()))
-                .willReturn(mockMemberEntity);
-
         /* When */
         PointEntity pointEntity = this.pointService.earnPoint(amount,mockMemberEntity.getId());
 
@@ -62,9 +58,6 @@ public class PointServiceTest {
         assertEquals(mockPointEntity.getMember().getId(),pointEntity.getMember().getId());
 
         assertEquals(amount,pointEntity.getAmount());
-        assertEquals(amount,mockMemberEntity.getPoint());
-
-        assertEquals(pointEntity.getAmount(), mockMemberEntity.getPoint());
     }
 
     public MemberEntity buildMockMember01() {
