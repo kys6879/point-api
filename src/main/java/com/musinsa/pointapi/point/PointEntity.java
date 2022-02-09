@@ -21,7 +21,7 @@ public class PointEntity {
     @Column(nullable = false)
     private LocalDateTime actionAt;
 
-    @Column(nullable = false)
+    @Column
     private LocalDateTime expireAt;
 
     @ManyToOne(targetEntity = MemberEntity.class, fetch = FetchType.LAZY)

@@ -4,6 +4,8 @@ import com.musinsa.pointapi.common.CommonDateService;
 import com.musinsa.pointapi.member.MemberEntity;
 import com.musinsa.pointapi.member.MemberService;
 import com.musinsa.pointapi.point.repository.PointRepository;
+import com.musinsa.pointapi.point_detail.PointDetailEntity;
+import com.musinsa.pointapi.point_detail.PointDetailService;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -13,10 +15,12 @@ import java.time.LocalDateTime;
 public class PointService {
 
     private final MemberService memberService;
+    private final PointDetailService pointDetailService;
     private final PointRepository pointRepository;
 
-    public PointService(MemberService memberService, PointRepository pointRepository) {
+    public PointService(MemberService memberService, PointDetailService pointDetailService, PointRepository pointRepository) {
         this.memberService = memberService;
+        this.pointDetailService = pointDetailService;
         this.pointRepository = pointRepository;
     }
 
@@ -30,9 +34,9 @@ public class PointService {
 
         MemberEntity memberEntity = this.memberService.findMemberById(memberId);
 
-        /* 포인트 테이블에 INSERT */
+        /* INSERT into point  */
         PointEntity pointEntity = new PointEntity(
-                0L,
+                null,
                 PointStatusEnum.EARN,
                 amount,
                 actionAt,
@@ -40,18 +44,63 @@ public class PointService {
                 memberEntity
         );
 
-        return pointRepository.save(pointEntity);
+        PointEntity savedPointEntity = pointRepository.save(pointEntity);
+
+        /* INSERT into point_detail */
+        PointDetailEntity pointDetailEntity = new PointDetailEntity(
+                null,
+                PointStatusEnum.EARN,
+                amount,
+                actionAt,
+                expireAt,
+                pointEntity
+        );
+
+        pointDetailEntity.setPointDetail();
+
+        pointDetailService.savePointDetail(pointDetailEntity);
+
+        return savedPointEntity;
     }
 
     // 포인트 사용
-//    public PointEntity usePoint(Integer amount, Long memberId) {
-//
-//        /* 현재로부터 만료일이 가장 가까운 적립된 포인트를 찾는다. */
-//
-//        /* 그 포인트의 만료일을 가져온다. */
-//
-//        /* 가까운 포인트의 만료일을 가지고 포인트를 사용한다. */
-//
-//    }
+    // 잔액 부족 예외처리 필요
+    @Transactional
+    public PointEntity usePoint(Integer amount, Long memberId) {
+
+        amount = this.toNegativeNumber(amount);
+
+        LocalDateTime actionAt = CommonDateService.getToday();
+
+        MemberEntity memberEntity = this.memberService.findMemberById(memberId);
+
+        /* INSERT into point  */
+        PointEntity pointEntity = new PointEntity(
+                null,
+                PointStatusEnum.USED,
+                amount,
+                actionAt,
+                null,
+                memberEntity
+        );
+
+        PointEntity savedPointEntity = pointRepository.save(pointEntity);
+
+        // 유효기간이 가장 가까운 것들을 가져온다.
+
+        //
+
+        return savedPointEntity;
+    }
+
+    private Integer toNegativeNumber(int amount) {
+        if(amount > 0) {
+            return amount * -1;
+        }
+        if(amount < 0) {
+            return amount;
+        }
+        throw new IllegalArgumentException("입력값이 잘못되었습니다. 0원은 사용할 수 없습니다.");
+    }
 
 }

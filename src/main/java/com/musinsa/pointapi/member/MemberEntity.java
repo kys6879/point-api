@@ -17,6 +17,9 @@ public class MemberEntity {
     @Column(nullable = false)
     private Integer point;
 
+    public MemberEntity() {
+    }
+
     public MemberEntity(Long id) {
         this.id = id;
     }
