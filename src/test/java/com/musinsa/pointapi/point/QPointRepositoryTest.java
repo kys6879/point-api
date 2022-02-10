@@ -58,7 +58,8 @@ public class QPointRepositoryTest {
     void findOneFirstEarnedPointTest() {
         PointEntity FirstEarnedPoint = this.qPointRepository.findOneFirstEarnedPoint();
 
-        System.out.println("asdf");
+        assertEquals(1000,FirstEarnedPoint.getAmount());
+
     }
 
     @DisplayName("특정 유저의 포인트 내역을 페이지별로 가져온다.")

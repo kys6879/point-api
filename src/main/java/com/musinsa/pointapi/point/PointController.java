@@ -4,7 +4,7 @@ import com.musinsa.pointapi.http.BaseResponse;
 import com.musinsa.pointapi.http.CodeEnum;
 import com.musinsa.pointapi.member.MemberController;
 import com.musinsa.pointapi.point.dto.PointDto;
-import com.musinsa.pointapi.point.request.EarnPointRequest;
+import com.musinsa.pointapi.point.request.PointActionRequest;
 import com.musinsa.pointapi.point.response.GetPointsResponse;
 import com.musinsa.pointapi.point.response.GetTotalPointResponse;
 import com.musinsa.pointapi.point_detail.PointDetailService;
@@ -78,10 +78,10 @@ public class PointController extends MemberController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{memberId}/points")
-    ResponseEntity<BaseResponse<PointDto>> earnPoint(@PathVariable String memberId, @RequestBody EarnPointRequest earnPointRequest) {
+    @PostMapping("/{memberId}/points/earn")
+    ResponseEntity<BaseResponse<PointDto>> earnPoint(@PathVariable String memberId, @RequestBody PointActionRequest pointActionRequest) {
 
-        Integer amount = earnPointRequest.getAmount();
+        Integer amount = pointActionRequest.getAmount();
         Long integerMemberId = Long.valueOf(memberId);
 
         PointEntity savedPoint = this.pointService.earnPoint(amount,integerMemberId);
@@ -90,6 +90,24 @@ public class PointController extends MemberController {
                 true,
                 CodeEnum.OK,
                 PointDto.from(savedPoint)
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{memberId}/points/use")
+    ResponseEntity<BaseResponse<PointDto>> usePoint(@PathVariable String memberId, @RequestBody PointActionRequest pointActionRequest) {
+
+        Integer amount = pointActionRequest.getAmount();
+        Long integerMemberId = Long.valueOf(memberId);
+
+        PointEntity savedPoint = this.pointService.usePoint(amount,integerMemberId);
+
+        BaseResponse<PointDto> response = new BaseResponse(
+                true,
+                CodeEnum.OK,
+//                PointDto.from(savedPoint)
+                null
         );
 
         return ResponseEntity.ok(response);

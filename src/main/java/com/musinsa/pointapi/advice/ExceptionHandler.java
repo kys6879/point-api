@@ -1,9 +1,9 @@
 package com.musinsa.pointapi.advice;
 
+import com.musinsa.pointapi.advice.exception.NotEnoughPointException;
 import com.musinsa.pointapi.advice.exception.NotFoundException;
 import com.musinsa.pointapi.http.BaseResponse;
 import com.musinsa.pointapi.http.CodeEnum;
-import com.musinsa.pointapi.point.response.GetPointsResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -56,6 +56,18 @@ public class ExceptionHandler {
                 false,
                 CodeEnum.ERROR_NOT_FOUND,
                 "[올바르지 않은 상태입니다.] => " + exception.getMessage()
+        );
+
+        return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(value = NotEnoughPointException.class)
+    public ResponseEntity<BaseResponse<String>> handleNotEnoughPointException(NotEnoughPointException exception) {
+
+        BaseResponse<String> response = new BaseResponse(
+                false,
+                CodeEnum.ERROR_NOTENOUGH_POINT,
+                "[올바르지 않은 포인트상태입니다.] => " + exception.getMessage()
         );
 
         return new ResponseEntity(response, HttpStatus.BAD_REQUEST);

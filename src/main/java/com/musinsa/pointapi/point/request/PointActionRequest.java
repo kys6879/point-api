@@ -1,6 +1,6 @@
 package com.musinsa.pointapi.point.request;
 
-public class EarnPointRequest {
+public class PointActionRequest {
     Integer amount;
 
     public Integer getAmount() {

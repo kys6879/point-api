@@ -3,6 +3,7 @@ package com.musinsa.pointapi.point.repository;
 import com.musinsa.pointapi.common.CommonDateService;
 import com.musinsa.pointapi.member.QMemberEntity;
 import com.musinsa.pointapi.point.PointEntity;
+import com.musinsa.pointapi.point.PointStatusEnum;
 import com.musinsa.pointapi.point.QPointEntity;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -51,7 +52,7 @@ public class QPointRepository extends QuerydslRepositorySupport {
         return new PageImpl<>(points,pageable,totalCount);
     }
 
-    /* 가장 먼저 적립된 포인트 가져오기 */
+    /* 가장 먼저 적립된 유효한 포인트 1개 가져오기.  */
     public PointEntity findOneFirstEarnedPoint() {
 
         LocalDateTime today = CommonDateService.getToday();
@@ -61,11 +62,15 @@ public class QPointRepository extends QuerydslRepositorySupport {
         return this.jpaQueryFactory
                 /* Point 테이블에서 */
                 .selectFrom(model)
-                /* 만료되지 않은 포인트들을*/
-                .where(model.expireAt.after(today))
+                .where(
+                        /* 유효하고*/
+                        model.expireAt.after(today),
+                        /* '적립' 유형인 것들을*/
+                        model.status.eq(PointStatusEnum.EARN)
+                )
                 /* 오름차순으로 정렬 후 */
                 .orderBy(model.expireAt.asc())
-                /* 최근 1개를 */
+                /* 첫번째 row 1개를 */
                 .limit(1)
                 /* 가져온다. */
                 .fetchOne();
