@@ -4,14 +4,21 @@ import com.musinsa.pointapi.common.CommonDateService;
 import com.musinsa.pointapi.member.MemberEntity;
 import com.musinsa.pointapi.member.MemberService;
 import com.musinsa.pointapi.point.repository.PointRepository;
+import com.musinsa.pointapi.point.repository.QPointRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.BDDMockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,10 +33,41 @@ public class PointServiceTest {
     private MemberService memberService;
     @Mock
     private PointRepository pointRepository;
+    @Mock
+    private QPointRepository qPointRepository;
 
     private final Long mockMember01Id = 1L;
 
     private final Long mockPoint01Id = 1L;
+
+    @DisplayName("포인트 가져오기")
+    @Test
+    public void findPointsByMemberIdTest() {
+
+        /* Given */
+        int size = 10;
+        int page = 0;
+        MemberEntity mockMemberEntity = this.buildMockMember01();
+
+        given(this.memberService.findMemberById(mockMember01Id))
+                .willReturn(mockMemberEntity);
+
+        PageRequest pageRequest = PageRequest.of(page,size);
+
+        List<PointEntity> mockPointEntities = this.buildMockPoints(size,mockMemberEntity);
+
+        Page<PointEntity> mockPointPage = this.buildMockPointPage(mockPointEntities,pageRequest,1L);
+
+        given(this.qPointRepository.findPointPage(mockMemberEntity.getId(),pageRequest))
+                .willReturn(mockPointPage);
+
+        /* When */
+        Page<PointEntity> pointPage = this.pointService.findPointsByMemberId(mockMember01Id,pageRequest);
+
+        /* Then */
+        assertEquals(size,pointPage.getContent().size());
+        assertEquals(page,pointPage.getPageable().getPageNumber());
+    }
 
     @DisplayName("포인트 적립")
     @Test
@@ -69,5 +107,22 @@ public class PointServiceTest {
         LocalDateTime afterOneYear = CommonDateService.getAfterOneYear(now);
 
         return new PointEntity(mockPoint01Id,PointStatusEnum.EARN,amount,now,afterOneYear,memberEntity);
+    }
+
+    public List<PointEntity> buildMockPoints(Integer size, MemberEntity memberEntity) {
+
+        List<PointEntity> pointEntities = new ArrayList<>();
+        for (int i=0; i<size; i++) {
+            LocalDateTime now = CommonDateService.getToday();
+            LocalDateTime afterOneYear = CommonDateService.getAfterOneYear(now);
+
+            pointEntities.add(new PointEntity(mockPoint01Id,PointStatusEnum.EARN,1000,now,afterOneYear,memberEntity));
+        }
+
+        return pointEntities;
+    }
+
+    public Page<PointEntity> buildMockPointPage(List<PointEntity> points, Pageable pageable, Long totalCount) {
+        return new PageImpl<>(points,pageable,totalCount);
     }
 }

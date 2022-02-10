@@ -4,8 +4,11 @@ import com.musinsa.pointapi.common.CommonDateService;
 import com.musinsa.pointapi.member.MemberEntity;
 import com.musinsa.pointapi.member.MemberService;
 import com.musinsa.pointapi.point.repository.PointRepository;
+import com.musinsa.pointapi.point.repository.QPointRepository;
 import com.musinsa.pointapi.point_detail.PointDetailEntity;
 import com.musinsa.pointapi.point_detail.PointDetailService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -17,11 +20,19 @@ public class PointService {
     private final MemberService memberService;
     private final PointDetailService pointDetailService;
     private final PointRepository pointRepository;
+    private final QPointRepository qPointRepository;
 
-    public PointService(MemberService memberService, PointDetailService pointDetailService, PointRepository pointRepository) {
+    public PointService(MemberService memberService, PointDetailService pointDetailService, PointRepository pointRepository, QPointRepository qPointRepository) {
         this.memberService = memberService;
         this.pointDetailService = pointDetailService;
         this.pointRepository = pointRepository;
+        this.qPointRepository = qPointRepository;
+    }
+
+    public Page<PointEntity> findPointsByMemberId(Long memberId, Pageable pageable) {
+        MemberEntity memberEntity = this.memberService.findMemberById(memberId);
+
+        return this.qPointRepository.findPointPage(memberEntity.getId(),pageable);
     }
 
     // 포인트 적립
