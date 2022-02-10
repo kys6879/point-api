@@ -1,8 +1,8 @@
 spring:
   jpa:
     hibernate:
-#      ddl-auto: none
-      ddl-auto: create-drop
+      ddl-auto: none
+#      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
@@ -19,7 +19,7 @@ spring:
     username: sa
     password:
 
-#  sql:
-#    init:
-#      data-locations: classpath*:sql/init_data.sql
-#      schema-locations: classpath*:sql/schema.sql
+  sql:
+    init:
+      data-locations: classpath*:sql/init_data.sql
+      schema-locations: classpath*:sql/schema.sql

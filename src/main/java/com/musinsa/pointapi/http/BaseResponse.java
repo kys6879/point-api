@@ -2,8 +2,14 @@ package com.musinsa.pointapi.http;
 
 public class BaseResponse<T> {
     Boolean success;
-    Integer code;
+    CodeEnum code;
     T data;
+
+    public BaseResponse(Boolean success, CodeEnum code, T data) {
+        this.success = success;
+        this.code = code;
+        this.data = data;
+    }
 
     public Boolean getSuccess() {
         return success;
@@ -13,11 +19,11 @@ public class BaseResponse<T> {
         this.success = success;
     }
 
-    public Integer getCode() {
+    public CodeEnum getCode() {
         return code;
     }
 
-    public void setCode(Integer code) {
+    public void setCode(CodeEnum code) {
         this.code = code;
     }
 

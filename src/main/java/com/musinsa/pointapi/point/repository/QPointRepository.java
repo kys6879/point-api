@@ -50,6 +50,7 @@ public class QPointRepository extends QuerydslRepositorySupport {
 
         return new PageImpl<>(points,pageable,totalCount);
     }
+
     /* 가장 먼저 적립된 포인트 가져오기 */
     public PointEntity findOneFirstEarnedPoint() {
 

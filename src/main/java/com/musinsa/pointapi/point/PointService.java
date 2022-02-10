@@ -40,6 +40,9 @@ public class PointService {
     @Transactional
     public PointEntity earnPoint(Integer amount, Long memberId) {
 
+        /* 포인트 적립은 1원 이상부터 가능합니다. 음수일시 양수로 전환하고, 0원일시 IllegalArgumentException 예외를 던집니다. */
+        amount = this.toPositiveNumber(amount);
+
         LocalDateTime actionAt = CommonDateService.getToday();
         LocalDateTime expireAt = CommonDateService.getAfterOneYear(actionAt);
 
@@ -75,10 +78,11 @@ public class PointService {
     }
 
     // 포인트 사용
-    // 잔액 부족 예외처리 필요
+    // TODO 잔액 부족 예외처리 필요
     @Transactional
     public PointEntity usePoint(Integer amount, Long memberId) {
 
+        /* 포인트 사용은 -1원 이하부터 가능합니다. 양수일시 음수로 전환하고, 0원일시 IllegalArgumentException 예외를 던집니다. */
         amount = this.toNegativeNumber(amount);
 
         LocalDateTime actionAt = CommonDateService.getToday();
@@ -110,6 +114,16 @@ public class PointService {
         }
         if(amount < 0) {
             return amount;
+        }
+        throw new IllegalArgumentException("입력값이 잘못되었습니다. 0원은 사용할 수 없습니다.");
+    }
+
+    private Integer toPositiveNumber(int amount) {
+        if(amount > 0) {
+            return amount;
+        }
+        if(amount < 0) {
+            return amount * -1;
         }
         throw new IllegalArgumentException("입력값이 잘못되었습니다. 0원은 사용할 수 없습니다.");
     }

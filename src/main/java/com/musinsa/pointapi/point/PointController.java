@@ -1,53 +1,96 @@
 package com.musinsa.pointapi.point;
 
 import com.musinsa.pointapi.http.BaseResponse;
+import com.musinsa.pointapi.http.CodeEnum;
 import com.musinsa.pointapi.member.MemberController;
+import com.musinsa.pointapi.point.dto.PointDto;
 import com.musinsa.pointapi.point.request.EarnPointRequest;
+import com.musinsa.pointapi.point.response.GetPointsResponse;
+import com.musinsa.pointapi.point.response.GetTotalPointResponse;
+import com.musinsa.pointapi.point_detail.PointDetailService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 public class PointController extends MemberController {
 
     private final PointService pointService;
+    private final PointDetailService pointDetailService;
 
-    public PointController(PointService pointService) {
+    public PointController(PointService pointService, PointDetailService pointDetailService) {
         this.pointService = pointService;
+        this.pointDetailService = pointDetailService;
     }
 
     @GetMapping("/{memberId}/points")
-    ResponseEntity<BaseResponse<String>> getPoints(
+    ResponseEntity<BaseResponse<GetPointsResponse>> getPoints(
             @PathVariable String memberId,
             @RequestParam int page,
             @RequestParam int size,
-            @RequestParam Sort.Direction sort
+            @RequestParam(name = "direction") Sort.Direction sort
             ) {
 
         Long integerMemberId = Long.valueOf(memberId);
 
-        PageRequest pageRequest = PageRequest.of(page,size,sort);
+        PageRequest pageRequest = PageRequest.of(page,size,sort,"actionAt");
 
         Page<PointEntity> pointPage = this.pointService.findPoints(integerMemberId,pageRequest);
 
+        int totalSize = pointPage.getTotalPages();
 
+        List<PointDto> points = pointPage.getContent()
+                .stream()
+                .map(PointDto::from)
+                .collect(Collectors.toList());
 
-        BaseResponse<String> response = new BaseResponse();
+        GetPointsResponse responseDto = new GetPointsResponse(points,totalSize);
+
+        BaseResponse<GetPointsResponse> response = new BaseResponse(
+                true,
+                CodeEnum.OK,
+                responseDto
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{memberId}/points/total")
+    ResponseEntity<BaseResponse<GetTotalPointResponse>> getTotalPoint(@PathVariable String memberId) {
+
+        Long integerMemberId = Long.valueOf(memberId);
+
+        Integer totalPoint = this.pointDetailService.findTotalPoint(integerMemberId);
+
+        GetTotalPointResponse responseDto = new GetTotalPointResponse(totalPoint);
+
+        BaseResponse<GetTotalPointResponse> response = new BaseResponse(
+                true,
+                CodeEnum.OK,
+                responseDto
+        );
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{memberId}/points")
-    ResponseEntity<BaseResponse<String>> earnPoint(@PathVariable String memberId, @RequestBody EarnPointRequest earnPointRequest) {
+    ResponseEntity<BaseResponse<PointDto>> earnPoint(@PathVariable String memberId, @RequestBody EarnPointRequest earnPointRequest) {
 
         Integer amount = earnPointRequest.getAmount();
         Long integerMemberId = Long.valueOf(memberId);
 
-        this.pointService.earnPoint(amount,integerMemberId);
+        PointEntity savedPoint = this.pointService.earnPoint(amount,integerMemberId);
 
-        BaseResponse<String> response = new BaseResponse();
+        BaseResponse<PointDto> response = new BaseResponse(
+                true,
+                CodeEnum.OK,
+                PointDto.from(savedPoint)
+        );
 
         return ResponseEntity.ok(response);
     }

@@ -1,25 +1,26 @@
 package com.musinsa.pointapi.point.response;
 
 import com.musinsa.pointapi.point.PointEntity;
+import com.musinsa.pointapi.point.dto.PointDto;
 
 import java.util.List;
 
 public class GetPointsResponse {
 
-    private List<PointEntity> points;
+    private List<PointDto> points;
 
     private int totalSize;
 
-    public GetPointsResponse(List<PointEntity> points, int totalSize) {
+    public GetPointsResponse(List<PointDto> points, int totalSize) {
         this.points = points;
         this.totalSize = totalSize;
     }
 
-    public List<PointEntity> getPoints() {
+    public List<PointDto> getPoints() {
         return points;
     }
 
-    public void setPoints(List<PointEntity> points) {
+    public void setPoints(List<PointDto> points) {
         this.points = points;
     }
 
