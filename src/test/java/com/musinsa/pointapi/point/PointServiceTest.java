@@ -62,7 +62,7 @@ public class PointServiceTest {
                 .willReturn(mockPointPage);
 
         /* When */
-        Page<PointEntity> pointPage = this.pointService.findPointsByMemberId(mockMember01Id,pageRequest);
+        Page<PointEntity> pointPage = this.pointService.findPoints(mockMember01Id,pageRequest);
 
         /* Then */
         assertEquals(size,pointPage.getContent().size());

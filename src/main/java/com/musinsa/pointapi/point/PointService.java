@@ -29,7 +29,7 @@ public class PointService {
         this.qPointRepository = qPointRepository;
     }
 
-    public Page<PointEntity> findPointsByMemberId(Long memberId, Pageable pageable) {
+    public Page<PointEntity> findPoints(Long memberId, Pageable pageable) {
         MemberEntity memberEntity = this.memberService.findMemberById(memberId);
 
         return this.qPointRepository.findPointPage(memberEntity.getId(),pageable);

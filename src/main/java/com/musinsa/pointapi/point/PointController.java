@@ -3,6 +3,9 @@ package com.musinsa.pointapi.point;
 import com.musinsa.pointapi.http.BaseResponse;
 import com.musinsa.pointapi.member.MemberController;
 import com.musinsa.pointapi.point.request.EarnPointRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +19,20 @@ public class PointController extends MemberController {
     }
 
     @GetMapping("/{memberId}/points")
-    ResponseEntity<BaseResponse<String>> getMemberPoint(@PathVariable String memberId) {
+    ResponseEntity<BaseResponse<String>> getPoints(
+            @PathVariable String memberId,
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam Sort.Direction sort
+            ) {
 
         Long integerMemberId = Long.valueOf(memberId);
+
+        PageRequest pageRequest = PageRequest.of(page,size,sort);
+
+        Page<PointEntity> pointPage = this.pointService.findPoints(integerMemberId,pageRequest);
+
+
 
         BaseResponse<String> response = new BaseResponse();
 
