@@ -8,7 +8,6 @@ create table member (
                         id bigint not null auto_increment,
                         email varchar(100) not null,
                         password varchar(50) not null,
-                        point integer not null,
                         primary key (id)
 ) engine=InnoDB;
 

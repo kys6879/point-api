@@ -26,14 +26,4 @@ public class MemberService {
         return this.qMemberRepository.findMemberById(memberId);
     }
 
-    public MemberEntity increaseMemberPoint(Integer point, Long memberId) {
-        MemberEntity memberEntity = this.findMemberById(memberId);
-
-        Integer increasedPoint = memberEntity.getPoint() + point;
-
-        memberEntity.setPoint(increasedPoint);
-
-        return this.memberRepository.save(memberEntity);
-    }
-
 }

@@ -29,6 +29,7 @@ public class PointController extends MemberController {
         this.pointDetailService = pointDetailService;
     }
 
+    /* 이력 조회 */
     @GetMapping("/{memberId}/points")
     ResponseEntity<BaseResponse<GetPointsResponse>> getPoints(
             @PathVariable String memberId,
@@ -39,6 +40,7 @@ public class PointController extends MemberController {
 
         Long integerMemberId = Long.valueOf(memberId);
 
+        /* 등록순으로 sorting */
         PageRequest pageRequest = PageRequest.of(page,size,sort,"actionAt");
 
         Page<PointEntity> pointPage = this.pointService.findPoints(integerMemberId,pageRequest);
@@ -61,6 +63,7 @@ public class PointController extends MemberController {
         return ResponseEntity.ok(response);
     }
 
+    /* 합계 조회 */
     @GetMapping("/{memberId}/points/total")
     ResponseEntity<BaseResponse<GetTotalPointResponse>> getTotalPoint(@PathVariable String memberId) {
 
@@ -79,6 +82,7 @@ public class PointController extends MemberController {
         return ResponseEntity.ok(response);
     }
 
+    /* 적립 */
     @PostMapping("/{memberId}/points/earn")
     ResponseEntity<BaseResponse<GetPointResponse>> earnPoint(@PathVariable String memberId, @RequestBody PointActionRequest pointActionRequest) {
 
@@ -96,6 +100,7 @@ public class PointController extends MemberController {
         return ResponseEntity.ok(response);
     }
 
+    /* 사용 */
     @PostMapping("/{memberId}/points/use")
     ResponseEntity<BaseResponse<GetPointResponse>> usePoint(@PathVariable String memberId, @RequestBody PointActionRequest pointActionRequest) {
 

@@ -5,6 +5,8 @@ import com.musinsa.pointapi.member.MemberEntity;
 import com.musinsa.pointapi.member.MemberService;
 import com.musinsa.pointapi.point.repository.PointRepository;
 import com.musinsa.pointapi.point.repository.QPointRepository;
+import com.musinsa.pointapi.point_detail.PointDetailEntity;
+import com.musinsa.pointapi.point_detail.PointDetailService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +34,8 @@ public class PointServiceTest {
     @Mock
     private MemberService memberService;
     @Mock
+    private PointDetailService pointDetailService;
+    @Mock
     private PointRepository pointRepository;
     @Mock
     private QPointRepository qPointRepository;
@@ -40,7 +44,9 @@ public class PointServiceTest {
 
     private final Long mockPoint01Id = 1L;
 
-    @DisplayName("포인트 가져오기")
+    private final Long mockPointDetail01Id = 1L;
+
+    @DisplayName("회원별 포인트 적립/사용 내역 조회")
     @Test
     public void findPointsByMemberIdTest() {
 
@@ -77,12 +83,16 @@ public class PointServiceTest {
         Integer amount = 1000; // 1000 Point 적립
         MemberEntity mockMemberEntity = this.buildMockMember01();
         PointEntity mockPointEntity = this.buildMockEarnPoint01(amount,mockMemberEntity);
+        PointDetailEntity mockPointDetailEntity = this.buildMockPointDetail01(mockPointEntity);
 
         given(this.memberService.findMemberById(mockMember01Id))
                 .willReturn(mockMemberEntity);
 
         given(this.pointRepository.save(any()))
                 .willReturn(mockPointEntity);
+
+        given(this.pointDetailService.savePointDetail(any()))
+                .willReturn(mockPointDetailEntity);
 
         /* When */
         PointEntity pointEntity = this.pointService.earnPoint(amount,mockMemberEntity.getId());
@@ -99,7 +109,7 @@ public class PointServiceTest {
     }
 
     public MemberEntity buildMockMember01() {
-        return new MemberEntity(mockMember01Id,"mock01@example.com","1234",0);
+        return new MemberEntity(mockMember01Id,"mock01@example.com","1234");
     }
 
     public PointEntity buildMockEarnPoint01(Integer amount, MemberEntity memberEntity) {
@@ -107,6 +117,10 @@ public class PointServiceTest {
         LocalDateTime afterOneYear = CommonDateService.getAfterOneYear(now);
 
         return new PointEntity(mockPoint01Id,PointStatusEnum.EARN,amount,now,afterOneYear,memberEntity);
+    }
+
+    public PointDetailEntity buildMockPointDetail01(PointEntity pointEntity) {
+        return new PointDetailEntity(mockPointDetail01Id,pointEntity.getStatus(),pointEntity.getAmount(),pointEntity.getActionAt(),pointEntity.getExpireAt(),pointEntity);
     }
 
     public List<PointEntity> buildMockPoints(Integer size, MemberEntity memberEntity) {

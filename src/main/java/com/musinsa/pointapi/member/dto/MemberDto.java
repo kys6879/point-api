@@ -9,13 +9,10 @@ public class MemberDto {
 
     private String password;
 
-    private Integer point;
-
-    public MemberDto(Long id, String email, String password, Integer point) {
+    public MemberDto(Long id, String email, String password) {
         this.id = id;
         this.email = email;
         this.password = password;
-        this.point = point;
     }
 
     public Long getId() {
@@ -42,20 +39,11 @@ public class MemberDto {
         this.password = password;
     }
 
-    public Integer getPoint() {
-        return point;
-    }
-
-    public void setPoint(Integer point) {
-        this.point = point;
-    }
-
     public static MemberDto from(MemberEntity memberEntity) {
         return new MemberDto(
                 memberEntity.getId(),
                 memberEntity.getEmail(),
-                memberEntity.getPassword(),
-                memberEntity.getPoint()
+                memberEntity.getPassword()
         );
     }
 }

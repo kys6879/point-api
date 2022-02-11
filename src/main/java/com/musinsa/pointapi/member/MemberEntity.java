@@ -14,9 +14,6 @@ public class MemberEntity {
     @Column(nullable = false, length = 50)
     private String password;
 
-    @Column(nullable = false)
-    private Integer point;
-
     public MemberEntity() {
     }
 
@@ -24,11 +21,10 @@ public class MemberEntity {
         this.id = id;
     }
 
-    public MemberEntity(Long id, String email, String password, Integer point) {
+    public MemberEntity(Long id, String email, String password) {
         this.id = id;
         this.email = email;
         this.password = password;
-        this.point = point;
     }
 
     public Long getId() {
@@ -53,13 +49,5 @@ public class MemberEntity {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Integer getPoint() {
-        return point;
-    }
-
-    public void setPoint(Integer point) {
-        this.point = point;
     }
 }

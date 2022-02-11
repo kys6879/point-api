@@ -47,8 +47,7 @@ public class QPointRepositoryTest {
         this.member01 = this.memberRepository.save(new MemberEntity(
                 null,
                 "test01",
-                "1234",
-                0
+                "1234"
         ));
 
     }

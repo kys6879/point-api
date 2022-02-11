@@ -1,4 +1,4 @@
-INSERT INTO member (id,email,password,point) values (1,'apple@example.com','1234',0);
+INSERT INTO member (id,email,password) values (1,'apple@example.com','1234');
 
 /* 1000 적립 */
 INSERT INTO point (id,status,amount,action_At,expire_At,member_id) values (1,'1',1000,'2022-01-01 23:10:00' ,'2023-01-01 23:10:00' ,1);
