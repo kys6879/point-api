@@ -41,17 +41,6 @@ public class PointServiceRealTest {
 
     @Test
     void usePointTest() {
-
-        this.pointService.usePoint(
-                -1000,
-                member01Id);
-
-        this.pointService.usePoint(
-                1000,
-                member01Id);
-
-        this.pointService.usePoint(
-                0,
-                member01Id);
+        this.pointService.usePoint(500,member01Id);
     }
 }

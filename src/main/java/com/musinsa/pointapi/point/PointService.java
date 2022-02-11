@@ -8,12 +8,15 @@ import com.musinsa.pointapi.point.repository.PointRepository;
 import com.musinsa.pointapi.point.repository.QPointRepository;
 import com.musinsa.pointapi.point_detail.PointDetailEntity;
 import com.musinsa.pointapi.point_detail.PointDetailService;
+import com.musinsa.pointapi.point_detail.repository.projection.AvailablePointDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class PointService {
@@ -90,30 +93,60 @@ public class PointService {
             throw new NotEnoughPointException("잔액이 부족합니다.");
         }
 
-        return null;
+        LocalDateTime actionAt = CommonDateService.getToday();
 
+        MemberEntity memberEntity = this.memberService.findMemberById(memberId);
 
-//        LocalDateTime actionAt = CommonDateService.getToday();
-//
-//        MemberEntity memberEntity = this.memberService.findMemberById(memberId);
-//
-//        /* INSERT into point  */
-//        PointEntity pointEntity = new PointEntity(
-//                null,
-//                PointStatusEnum.USED,
-//                amount,
-//                actionAt,
-//                null,
-//                memberEntity
-//        );
-//
-//        PointEntity savedPointEntity = pointRepository.save(pointEntity);
-//
-//        // 유효기간이 가장 가까운 것들을 가져온다.
-//
-//        //
-//
-//        return savedPointEntity;
+        /* INSERT into point  */
+        PointEntity pointEntity = new PointEntity(null, PointStatusEnum.USED, amount, actionAt, null, memberEntity);
+
+        PointEntity savedPointEntity = pointRepository.save(pointEntity);
+
+        /* 차감이 가능한 포인트를 가져온다. */
+        List<AvailablePointDto> availablePoints = this.pointDetailService.findAvailablePoints(memberId);
+
+        List<PointDetailEntity> pointDetailEntities = new ArrayList<>();
+
+        /* 먼저 적립된 포인트부터 소모 */
+        for (AvailablePointDto point: availablePoints) {
+            int sum = point.getSum();
+
+            int remain = sum - this.toPositiveNumber(amount);
+
+            /* 포인트 소모를 했는데 음수이면 그 다음 적립되었던 포인트도 소모 (선입선출)를 해야한다. */
+            if(remain < 0) {
+                PointDetailEntity pointDetail = new PointDetailEntity(
+                        null,
+                        PointStatusEnum.USED,
+                        this.toNegativeNumber(sum),
+                        pointEntity.getActionAt(),
+                        point.getPointDetail().getExpireAt(),
+                        savedPointEntity
+                );
+                pointDetail.setPointDetail(point.getPointDetail());
+
+                pointDetailEntities.add(
+                        pointDetail
+                );
+
+                amount += sum;
+
+            } else {
+                PointDetailEntity pointDetail = new PointDetailEntity(
+                        null,
+                        PointStatusEnum.USED,
+                        amount,
+                        pointEntity.getActionAt(),
+                        point.getPointDetail().getExpireAt(),
+                        savedPointEntity
+                );
+                pointDetail.setPointDetail(point.getPointDetail());
+                pointDetailEntities.add(pointDetail);
+                break;
+            }
+        }
+
+        return savedPointEntity;
     }
 
     private Integer toNegativeNumber(int amount) {
@@ -140,8 +173,4 @@ public class PointService {
         Integer totalPoint = this.pointDetailService.findTotalPoint(memberId);
         return totalPoint - Math.abs(amount) >= 0;
     }
-
-    // 2700
-    // -3300
-
 }

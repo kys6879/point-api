@@ -43,6 +43,7 @@ public class PointDetailEntity {
         this.actionAt = actionAt;
         this.expireAt = expireAt;
         this.point = point;
+        this.setPointDetail();
     }
 
     public PointDetailEntity() {
