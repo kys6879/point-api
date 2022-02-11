@@ -5,6 +5,7 @@ import com.musinsa.pointapi.http.CodeEnum;
 import com.musinsa.pointapi.member.MemberController;
 import com.musinsa.pointapi.point.dto.PointDto;
 import com.musinsa.pointapi.point.request.PointActionRequest;
+import com.musinsa.pointapi.point.response.GetPointResponse;
 import com.musinsa.pointapi.point.response.GetPointsResponse;
 import com.musinsa.pointapi.point.response.GetTotalPointResponse;
 import com.musinsa.pointapi.point_detail.PointDetailService;
@@ -79,14 +80,14 @@ public class PointController extends MemberController {
     }
 
     @PostMapping("/{memberId}/points/earn")
-    ResponseEntity<BaseResponse<PointDto>> earnPoint(@PathVariable String memberId, @RequestBody PointActionRequest pointActionRequest) {
+    ResponseEntity<BaseResponse<GetPointResponse>> earnPoint(@PathVariable String memberId, @RequestBody PointActionRequest pointActionRequest) {
 
         Integer amount = pointActionRequest.getAmount();
         Long integerMemberId = Long.valueOf(memberId);
 
         PointEntity savedPoint = this.pointService.earnPoint(amount,integerMemberId);
 
-        BaseResponse<PointDto> response = new BaseResponse(
+        BaseResponse<GetPointResponse> response = new BaseResponse(
                 true,
                 CodeEnum.OK,
                 PointDto.from(savedPoint)
@@ -96,18 +97,17 @@ public class PointController extends MemberController {
     }
 
     @PostMapping("/{memberId}/points/use")
-    ResponseEntity<BaseResponse<PointDto>> usePoint(@PathVariable String memberId, @RequestBody PointActionRequest pointActionRequest) {
+    ResponseEntity<BaseResponse<GetPointResponse>> usePoint(@PathVariable String memberId, @RequestBody PointActionRequest pointActionRequest) {
 
         Integer amount = pointActionRequest.getAmount();
         Long integerMemberId = Long.valueOf(memberId);
 
-        PointEntity savedPoint = this.pointService.usePoint(amount,integerMemberId);
+        PointEntity usedPoint = this.pointService.usePoint(amount,integerMemberId);
 
-        BaseResponse<PointDto> response = new BaseResponse(
+        BaseResponse<GetPointResponse> response = new BaseResponse(
                 true,
                 CodeEnum.OK,
-//                PointDto.from(savedPoint)
-                null
+                PointDto.from(usedPoint)
         );
 
         return ResponseEntity.ok(response);
