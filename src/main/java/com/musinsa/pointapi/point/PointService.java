@@ -1,6 +1,7 @@
 package com.musinsa.pointapi.point;
 
 import com.musinsa.pointapi.advice.exception.NotEnoughPointException;
+import com.musinsa.pointapi.advice.exception.NotFoundException;
 import com.musinsa.pointapi.common.CommonDateService;
 import com.musinsa.pointapi.member.MemberEntity;
 import com.musinsa.pointapi.member.MemberService;
@@ -33,6 +34,10 @@ public class PointService {
         this.qPointRepository = qPointRepository;
     }
 
+    public PointEntity findPointById(Long pointId) {
+        return this.pointRepository.findById(pointId).orElseThrow(() -> new NotFoundException("포인트를 찾을 수 없습니다."));
+    }
+
     public Page<PointEntity> findPoints(Long memberId, Pageable pageable) {
         MemberEntity memberEntity = this.memberService.findMemberById(memberId);
 
@@ -40,7 +45,6 @@ public class PointService {
     }
 
     // 포인트 적립
-    // TODO AOP로 포인트의 정합성 체크 필요
     @Transactional
     public PointEntity earnPoint(Integer amount, Long memberId) {
 
@@ -152,6 +156,48 @@ public class PointService {
         return savedPointEntity;
     }
 
+
+    /* 사용된 포인트를 취소 */
+    @Transactional
+    public PointEntity cancelPoint(Long pointId) {
+        PointEntity pointEntity = this.findPointById(pointId);
+        PointStatusEnum pointStatus = pointEntity.getStatus();
+
+        if(!this.isUsedStatus(pointStatus)) {
+            throw new IllegalStateException("해당 포인트는 사용된 포인트가 아닙니다. "+pointStatus+"타입 입니다.");
+        }
+
+        /* @TODO 이미 취소처리된 포인트인지 */
+
+        /* INSERT into point  */
+        LocalDateTime actionAt = CommonDateService.getToday();
+
+        PointEntity savedPointEntity = this.pointRepository.save(new PointEntity(
+                null,
+                PointStatusEnum.CANCEL,
+                this.toPositiveNumber(pointEntity.getAmount()),
+                actionAt,
+                pointEntity.getExpireAt(),
+                pointEntity.getMember()
+        ));
+
+        return null;
+
+
+//        this.pointDetailService.savePointDetail(new PointDetailEntity(
+//                null,
+//                PointStatusEnum.CANCEL,
+//                amount,
+//                actionAt,
+//                expireAt,
+//                pointEntity
+//        ));
+
+
+        // ex ) 100 원 등록
+        // ex ) 50 원 사용
+    }
+
     private Integer toNegativeNumber(int amount) {
         if(amount > 0) {
             return amount * -1;
@@ -175,5 +221,9 @@ public class PointService {
     private Boolean isEnoughPoint(Integer amount, Long memberId) {
         Integer totalPoint = this.pointDetailService.findTotalPoint(memberId);
         return totalPoint - Math.abs(amount) >= 0;
+    }
+
+    private Boolean isUsedStatus(PointStatusEnum status) {
+        return status.equals(PointStatusEnum.USED);
     }
 }

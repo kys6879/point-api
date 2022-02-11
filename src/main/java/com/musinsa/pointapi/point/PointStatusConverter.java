@@ -3,7 +3,6 @@ package com.musinsa.pointapi.point;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Convert;
 
-// TODO 상태 이외의 값 예외처리 필요
 @Convert
 public class PointStatusConverter implements AttributeConverter<PointStatusEnum, Integer> {
 
@@ -14,6 +13,7 @@ public class PointStatusConverter implements AttributeConverter<PointStatusEnum,
 
         if (PointStatusEnum.EARN.getName().equals(name)) return PointStatusEnum.EARN.getCode();
         if (PointStatusEnum.USED.getName().equals(name)) return PointStatusEnum.USED.getCode();
+        if (PointStatusEnum.CANCEL.getName().equals(name)) return PointStatusEnum.CANCEL.getCode();
 
         return 0;
     }
@@ -22,6 +22,7 @@ public class PointStatusConverter implements AttributeConverter<PointStatusEnum,
     public PointStatusEnum convertToEntityAttribute(Integer dbData) {
         if (dbData == 1) return PointStatusEnum.EARN;
         if (dbData == 2) return PointStatusEnum.USED;
+        if (dbData == 3) return PointStatusEnum.CANCEL;
 
         throw new IllegalArgumentException("잘못된 Point Status 입니다.");
     }
