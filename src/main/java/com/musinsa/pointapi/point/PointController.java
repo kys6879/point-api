@@ -91,10 +91,12 @@ public class PointController extends MemberController {
 
         PointEntity savedPoint = this.pointService.earnPoint(amount,integerMemberId);
 
+        GetPointResponse responseDto = new GetPointResponse(PointDto.from(savedPoint));
+
         BaseResponse<GetPointResponse> response = new BaseResponse(
                 true,
                 CodeEnum.OK,
-                PointDto.from(savedPoint)
+                responseDto
         );
 
         return ResponseEntity.ok(response);
@@ -109,10 +111,12 @@ public class PointController extends MemberController {
 
         PointEntity usedPoint = this.pointService.usePoint(amount,integerMemberId);
 
+        GetPointResponse responseDto = new GetPointResponse(PointDto.from(usedPoint));
+
         BaseResponse<GetPointResponse> response = new BaseResponse(
                 true,
                 CodeEnum.OK,
-                PointDto.from(usedPoint)
+                responseDto
         );
 
         return ResponseEntity.ok(response);

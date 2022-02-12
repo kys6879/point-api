@@ -3,20 +3,20 @@ package com.musinsa.pointapi.point.response;
 import com.musinsa.pointapi.point.dto.PointDto;
 
 public class GetPointResponse {
-    PointDto pointDto;
+    PointDto point;
 
     public GetPointResponse() {
     }
 
-    public GetPointResponse(PointDto pointDto) {
-        this.pointDto = pointDto;
+    public GetPointResponse(PointDto point) {
+        this.point = point;
     }
 
-    public PointDto getPointDto() {
-        return pointDto;
+    public PointDto getPoint() {
+        return point;
     }
 
-    public void setPointDto(PointDto pointDto) {
-        this.pointDto = pointDto;
+    public void setPoint(PointDto point) {
+        this.point = point;
     }
 }
