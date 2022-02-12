@@ -197,6 +197,7 @@ public class PointService {
         // ex ) 50 원 사용
     }
 
+    // @TODO 만료처리가 여러번됨 픽스필요
     @Transactional
     public List<PointEntity> expirePoint(Long memberId) {
         MemberEntity memberEntity = this.memberService.findMemberById(memberId);
