@@ -52,28 +52,4 @@ public class QPointRepository extends QuerydslRepositorySupport {
         return new PageImpl<>(points,pageable,totalCount);
     }
 
-    /* 가장 먼저 적립된 유효한 포인트 1개 가져오기.  */
-    public PointEntity findOneFirstEarnedPoint() {
-
-        LocalDateTime today = CommonDateService.getToday();
-
-        QPointEntity model = QPointEntity.pointEntity;
-
-        return this.jpaQueryFactory
-                /* Point 테이블에서 */
-                .selectFrom(model)
-                .where(
-                        /* 유효하고*/
-                        model.expireAt.after(today),
-                        /* '적립' 유형인 것들을*/
-                        model.status.eq(PointStatusEnum.EARN)
-                )
-                /* 오름차순으로 정렬 후 */
-                .orderBy(model.expireAt.asc())
-                /* 첫번째 row 1개를 */
-                .limit(1)
-                /* 가져온다. */
-                .fetchOne();
-    }
-
 }

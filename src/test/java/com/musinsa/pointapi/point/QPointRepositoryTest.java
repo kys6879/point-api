@@ -6,6 +6,7 @@ import com.musinsa.pointapi.member.repository.MemberRepository;
 import com.musinsa.pointapi.persistence.QueryDslConfig;
 import com.musinsa.pointapi.point.repository.PointRepository;
 import com.musinsa.pointapi.point.repository.QPointRepository;
+import com.musinsa.pointapi.point_detail.repository.PointDetailRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,27 +38,21 @@ public class QPointRepositoryTest {
     private PointRepository pointRepository;
 
     @Autowired
+    private PointDetailRepository pointDetailRepository;
+
+    @Autowired
     private MemberRepository memberRepository;
 
-    private MemberEntity member01;
+    private MemberEntity mockMember01;
 
     @BeforeEach
     void setUp() {
+        this.pointDetailRepository.deleteAll();
+        this.pointRepository.deleteAll();
+        this.memberRepository.deleteAll();
 
-        this.member01 = this.memberRepository.save(new MemberEntity(
-                null,
-                "test01",
-                "1234"
-        ));
-
-    }
-
-    @DisplayName("현재로부터 만료일이 가장 가까운 적립된 포인트를 찾는다.")
-    @Test
-    void findOneFirstEarnedPointTest() {
-        PointEntity FirstEarnedPoint = this.qPointRepository.findOneFirstEarnedPoint();
-
-        assertEquals(1000,FirstEarnedPoint.getAmount());
+        this.mockMember01 = this.buildMockMember01();
+        this.memberRepository.save(this.mockMember01);
 
     }
 
@@ -69,16 +64,16 @@ public class QPointRepositoryTest {
         List<PointEntity> targets = new ArrayList<>();
         for (int i=1; i<=10; i++) {
             LocalDateTime now = LocalDateTime.now();
-            targets.add(new PointEntity(null,PointStatusEnum.EARN,1000 * i,now.plusDays(i),now.plusYears(1),this.member01));
+            LocalDateTime increasedDay = now.plusDays(i);
+            targets.add(new PointEntity(null,PointStatusEnum.EARN,1000 * i,increasedDay,increasedDay.plusYears(1),this.mockMember01));
         }
-
         this.pointRepository.saveAll(targets);
 
         int size = 5;
 
         /* When */
         Pageable pageRequest01 = PageRequest.of(0, size, Sort.by("actionAt").ascending());
-        Page<PointEntity> page01 = this.qPointRepository.findPointPage(this.member01.getId(), pageRequest01);
+        Page<PointEntity> page01 = this.qPointRepository.findPointPage(this.mockMember01.getId(), pageRequest01);
 
         List<PointEntity> result01 = page01.getContent();
 
@@ -97,7 +92,7 @@ public class QPointRepositoryTest {
 
         /* When */
         Pageable pageRequest02 = PageRequest.of(1, size, Sort.by("actionAt").ascending());
-        Page<PointEntity> page02 = this.qPointRepository.findPointPage(this.member01.getId(), pageRequest02);
+        Page<PointEntity> page02 = this.qPointRepository.findPointPage(this.mockMember01.getId(), pageRequest02);
 
         List<PointEntity> result02 = page02.getContent();
 
@@ -118,11 +113,14 @@ public class QPointRepositoryTest {
     @Test
     void findPointPageOrderingTest() {
 
+        List<PointEntity> a = this.pointRepository.findAll();
+
         /* Given */
         List<PointEntity> targets = new ArrayList<>();
         for (int i=1; i<=10; i++) {
             LocalDateTime now = LocalDateTime.now();
-            targets.add(new PointEntity(null,PointStatusEnum.EARN,1000 * i,now.plusDays(i),now.plusYears(1),this.member01));
+            LocalDateTime increasedDay = now.plusDays(i);
+            targets.add(new PointEntity(null,PointStatusEnum.EARN,1000 * i,increasedDay,increasedDay.plusYears(1),this.mockMember01));
         }
 
         this.pointRepository.saveAll(targets);
@@ -135,7 +133,7 @@ public class QPointRepositoryTest {
 
         /* When */
         Pageable pageRequest01 = PageRequest.of(0, size, asc);
-        Page<PointEntity> page01 = this.qPointRepository.findPointPage(this.member01.getId(), pageRequest01);
+        Page<PointEntity> page01 = this.qPointRepository.findPointPage(this.mockMember01.getId(), pageRequest01);
 
         List<PointEntity> result01 = page01.getContent();
 
@@ -153,7 +151,7 @@ public class QPointRepositoryTest {
 
         /* When */
         Pageable pageRequest02 = PageRequest.of(0, size, desc);
-        Page<PointEntity> page02 = this.qPointRepository.findPointPage(this.member01.getId(), pageRequest02);
+        Page<PointEntity> page02 = this.qPointRepository.findPointPage(this.mockMember01.getId(), pageRequest02);
 
         List<PointEntity> result02 = page02.getContent();
 
@@ -168,6 +166,10 @@ public class QPointRepositoryTest {
         assertEquals(targets.get(7).getActionAt(), result02.get(2).getActionAt());
         assertEquals(targets.get(6).getActionAt(), result02.get(3).getActionAt());
         assertEquals(targets.get(5).getActionAt(), result02.get(4).getActionAt());
+    }
+
+    public MemberEntity buildMockMember01() {
+        return new MemberEntity(null,"mock01@example.com","1234");
     }
 
 }

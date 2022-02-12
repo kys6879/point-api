@@ -43,13 +43,14 @@ public class QPointDetailRepositoryTest {
 
     private MemberEntity mockMember01;
 
-    /* 유저 추가후 포인트 데이터 전부 비우고 시작 */
     @BeforeEach
     void setUp() {
-        this.mockMember01 = this.buildMockMember01();
-        this.memberRepository.save(this.mockMember01);
         this.pointDetailRepository.deleteAll();
         this.pointRepository.deleteAll();
+        this.memberRepository.deleteAll();
+
+        this.mockMember01 = this.buildMockMember01();
+        this.memberRepository.save(this.mockMember01);
     }
 
     @DisplayName("포인트의 합계를 구한다.")
