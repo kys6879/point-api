@@ -43,4 +43,11 @@ public class PointDetailService {
 
         return this.qPointDetailRepository.findAvailablePoints(memberEntity.getId());
     }
+
+    public List<AvailablePointDto> findAvailableExpiredPoints(Long memberId) {
+
+        MemberEntity memberEntity = this.memberService.findMemberById(memberId);
+
+        return this.qPointDetailRepository.findAvailableExpiredPoints(memberEntity.getId());
+    }
 }

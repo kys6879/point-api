@@ -117,4 +117,31 @@ public class PointController extends MemberController {
 
         return ResponseEntity.ok(response);
     }
+
+    /* 포인트 만료 처리 */
+    /* 이 API는 event service에서 동작하는 내용을 REST-API로 구현합니다. */
+    /* 회원 별 포인트 이력을 참조해서 유효기간이 지난 포인트가 있다면 만료처리를 합니다. */
+    /* 실제 시스템에서는 Micro service로 분리되어 특정 주기마다 event처리를 하여 포인트를 만료시킵니다. */
+    @PostMapping("/{memberId}/points/expire")
+    ResponseEntity<BaseResponse<GetPointsResponse>> expirePoint(@PathVariable String memberId) {
+
+        Long integerMemberId = Long.valueOf(memberId);
+
+        List<PointEntity> expiredPoints = this.pointService.expirePoint(integerMemberId);
+
+        List<PointDto> points = expiredPoints
+                .stream()
+                .map(PointDto::from)
+                .collect(Collectors.toList());
+
+        GetPointsResponse responseDto = new GetPointsResponse(points,expiredPoints.size());
+
+        BaseResponse<GetPointsResponse> response = new BaseResponse(
+                true,
+                CodeEnum.OK,
+                responseDto
+        );
+
+        return ResponseEntity.ok(response);
+    }
 }

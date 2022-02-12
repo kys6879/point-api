@@ -4,7 +4,8 @@ public enum PointStatusEnum {
 
     EARN(1,"EARN"), // 적립
     USED(2 ,"USED"), // 사용
-    CANCEL(3 ,"CANCEL"); // 취소
+    CANCEL(3 ,"CANCEL"), // 취소
+    EXPIRED(4 ,"EXPIRED"); // 취소
 
     private Integer code;
     private String name;

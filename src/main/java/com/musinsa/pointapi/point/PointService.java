@@ -18,6 +18,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PointService {
@@ -77,8 +78,6 @@ public class PointService {
                 expireAt,
                 pointEntity
         );
-
-        pointDetailEntity.setPointDetail();
 
         pointDetailService.savePointDetail(pointDetailEntity);
 
@@ -197,6 +196,55 @@ public class PointService {
         // ex ) 100 원 등록
         // ex ) 50 원 사용
     }
+
+    @Transactional
+    public List<PointEntity> expirePoint(Long memberId) {
+        MemberEntity memberEntity = this.memberService.findMemberById(memberId);
+        LocalDateTime actionAt = CommonDateService.getToday();
+
+        List<AvailablePointDto> expiredPoints = this.pointDetailService.findAvailableExpiredPoints(memberId);
+        if(expiredPoints.size() < 1) {
+            throw new NotFoundException("유효기간이 지난 포인트가 없어 만료처리에 실패하였습니다.");
+        }
+
+        for (AvailablePointDto dto: expiredPoints) {
+
+            PointDetailEntity expiredPoint = dto.getPointDetail();
+
+            Integer amount = this.toNegativeNumber(dto.getSum());
+
+            /* INSERT into point  */
+            PointEntity pointEntity = new PointEntity(
+                    null,
+                    PointStatusEnum.EARN,
+                    amount,
+                    actionAt,
+                    expiredPoint.getExpireAt(),
+                    memberEntity
+            );
+
+            PointEntity savedPointEntity = pointRepository.save(pointEntity);
+
+            /* INSERT into point_detail */
+            PointDetailEntity pointDetailEntity = new PointDetailEntity(
+                    null,
+                    PointStatusEnum.EARN,
+                    amount,
+                    actionAt,
+                    expiredPoint.getExpireAt(),
+                    savedPointEntity
+            );
+
+            pointDetailService.savePointDetail(pointDetailEntity);
+        }
+
+        return expiredPoints
+                .stream()
+                .map(pointDto -> pointDto.getPointDetail().getPoint())
+                .collect(Collectors.toList());
+    }
+
+
 
     private Integer toNegativeNumber(int amount) {
         if(amount > 0) {
