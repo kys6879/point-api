@@ -158,6 +158,7 @@ public class PointService {
 
     /* 사용된 포인트를 취소 */
     @Transactional
+    @Deprecated
     public PointEntity cancelPoint(Long pointId) {
         PointEntity pointEntity = this.findPointById(pointId);
         PointStatusEnum pointStatus = pointEntity.getStatus();
@@ -181,7 +182,6 @@ public class PointService {
         ));
 
         return null;
-
 
 //        this.pointDetailService.savePointDetail(new PointDetailEntity(
 //                null,
@@ -216,7 +216,7 @@ public class PointService {
             /* INSERT into point  */
             PointEntity pointEntity = new PointEntity(
                     null,
-                    PointStatusEnum.EARN,
+                    PointStatusEnum.EXPIRED,
                     amount,
                     actionAt,
                     expiredPoint.getExpireAt(),
@@ -228,7 +228,7 @@ public class PointService {
             /* INSERT into point_detail */
             PointDetailEntity pointDetailEntity = new PointDetailEntity(
                     null,
-                    PointStatusEnum.EARN,
+                    PointStatusEnum.EXPIRED,
                     amount,
                     actionAt,
                     expiredPoint.getExpireAt(),
