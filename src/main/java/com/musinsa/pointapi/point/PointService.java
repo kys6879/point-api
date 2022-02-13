@@ -111,8 +111,13 @@ public class PointService {
             amount += sum;
         }
 
-        this.pointDetailService.saveAllpointDetail(pointDetailDtos);
-
+        List<PointDetailEntity> savedDetails = this.pointDetailService.saveAllpointDetail(pointDetailDtos);
+        savedPointEntity.setPointDetailEntities(
+                savedDetails
+                        .stream()
+                        .map(PointDetailEntity::getPointDetail)
+                        .collect(Collectors.toList())
+        );
         return savedPointEntity;
     }
 

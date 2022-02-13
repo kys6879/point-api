@@ -1,9 +1,12 @@
 package com.musinsa.pointapi.point;
 
 import com.musinsa.pointapi.member.MemberEntity;
+import com.musinsa.pointapi.point_detail.PointDetailEntity;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity(name = "point")
 public class PointEntity {
@@ -26,6 +29,9 @@ public class PointEntity {
 
     @ManyToOne(targetEntity = MemberEntity.class, fetch = FetchType.LAZY)
     private MemberEntity member;
+
+    @OneToMany(mappedBy = "point", fetch = FetchType.LAZY)
+    private List<PointDetailEntity> pointDetailEntities = new ArrayList<>();
 
     public PointEntity(Long id, PointStatusEnum status, Integer amount, LocalDateTime actionAt, LocalDateTime expireAt, MemberEntity member) {
         this.id = id;
@@ -88,19 +94,11 @@ public class PointEntity {
         this.expireAt = expireAt;
     }
 
-//    public PointEntity buildEarnPointEntity(Long id, Integer amount, MemberEntity memberEntity) {
-//
-//        LocalDateTime now = CommonDateService.getToday();
-//        LocalDateTime afterOneYear = CommonDateService.getAfterOneYear(now);
-//
-//        return new PointEntity(
-//                this.id,
-//                PointStatusEnum.EARN,
-//                this.amount,
-//                now,
-//                afterOneYear,
-//                memberEntity
-//        );
-//    }
+    public List<PointDetailEntity> getPointDetailEntities() {
+        return pointDetailEntities;
+    }
 
+    public void setPointDetailEntities(List<PointDetailEntity> pointDetailEntities) {
+        this.pointDetailEntities = pointDetailEntities;
+    }
 }

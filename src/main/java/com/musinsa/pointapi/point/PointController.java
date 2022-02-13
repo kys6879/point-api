@@ -4,6 +4,7 @@ import com.musinsa.pointapi.http.BaseResponse;
 import com.musinsa.pointapi.http.CodeEnum;
 import com.musinsa.pointapi.member.MemberController;
 import com.musinsa.pointapi.point.dto.PointDto;
+import com.musinsa.pointapi.point.dto.UsedPointDto;
 import com.musinsa.pointapi.point.request.PointActionRequest;
 import com.musinsa.pointapi.point.response.GetPointResponse;
 import com.musinsa.pointapi.point.response.GetPointsResponse;
@@ -111,7 +112,7 @@ public class PointController extends MemberController {
 
         PointEntity usedPoint = this.pointService.usePoint(amount,integerMemberId);
 
-        GetPointResponse responseDto = new GetPointResponse(PointDto.from(usedPoint));
+        GetPointResponse responseDto = new GetPointResponse(UsedPointDto.from(usedPoint));
 
         BaseResponse<GetPointResponse> response = new BaseResponse(
                 true,

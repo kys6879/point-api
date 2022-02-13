@@ -126,10 +126,66 @@ public class PointServiceTest {
                 .willReturn(pointEntity);
 
         /* 사용가능한 10000포인트 1개 설정 */
+        List<AvailablePointDto> dtos = new ArrayList<>();
+        dtos.add(this.buildMockAvailablePointDto(totalPoint,this.buildMockEarnPointDetail(pointEntity)));
+
         given(this.pointDetailService.findAvailablePoints(mockMemberEntity.getId()))
-                .willReturn(this.buildMockAvailablePointDtos(
-                        totalPoint,
-                        this.buildMockEarnPointDetail(pointEntity)));
+                .willReturn(dtos);
+
+        /* 1500원 사용 포인트 디테일 이력 설정 */
+
+        List<PointDetailEntity> detailDtos = new ArrayList<>();
+
+        PointDetailEntity detail01 = this.buildMockUsePointDetail(pointEntity,amount);
+
+        detail01.setPointDetail(this.buildMockEarnPointDetail(
+                this.buildMockEarnPoint01(amount,mockMemberEntity)
+        ));
+        detailDtos.add(detail01);
+
+        given(this.pointDetailService.saveAllpointDetail(any()))
+                .willReturn(detailDtos);
+
+        /* When */
+        PointEntity usedPoint = this.pointService.usePoint(amount,mockMemberEntity.getId());
+
+        assertEquals(pointEntity.getAmount(),usedPoint.getAmount());
+        assertEquals(pointEntity.getStatus(),usedPoint.getStatus());
+        assertEquals(pointEntity.getActionAt(),usedPoint.getActionAt());
+        assertEquals(pointEntity.getExpireAt(),usedPoint.getExpireAt());
+
+        assertEquals(amount,usedPoint.getAmount());
+
+        /* 사용된 포인트의 상세정보는 적립했던 금액(원본) 이다.*/
+        assertEquals(PointStatusEnum.EARN,usedPoint.getPointDetailEntities().get(0).getStatus());
+    }
+
+    @DisplayName("포인트는 먼저 적립된 순서로 사용한다.")
+    @Test
+    public void firstUsePointTest() {
+        /* Given */
+        Integer amount = 1500;
+        Integer totalPoint = 1500;
+
+        MemberEntity mockMemberEntity = this.buildMockMember01();
+        PointEntity pointEntity = this.buildMockUsePoint(amount,mockMemberEntity);
+
+        /* 현재 잔액 설정 */
+        given(this.pointDetailService.findTotalPoint(mockMemberEntity.getId()))
+                .willReturn(totalPoint);
+
+        /* 1500원 사용 포인트 이력 설정 */
+        given(this.pointRepository.save(any()))
+                .willReturn(pointEntity);
+
+        /* 사용가능한 500포인트, 1000포인트 2개 설정 */
+        List<AvailablePointDto> dtos = new ArrayList<>();
+
+        dtos.add(this.buildMockAvailablePointDto(500,this.buildMockEarnPointDetail(pointEntity)));
+        dtos.add(this.buildMockAvailablePointDto(1000,this.buildMockEarnPointDetail(pointEntity)));
+
+        given(this.pointDetailService.findAvailablePoints(mockMemberEntity.getId()))
+                .willReturn(dtos);
 
         /* When */
         PointEntity usedPoint = this.pointService.usePoint(amount,mockMemberEntity.getId());
@@ -140,7 +196,6 @@ public class PointServiceTest {
         assertEquals(pointEntity.getExpireAt(),usedPoint.getExpireAt());
         assertEquals(amount,usedPoint.getAmount());
     }
-
 
     public MemberEntity buildMockMember01() {
         return new MemberEntity(mockMember01Id,"mock01@example.com","1234");
@@ -164,14 +219,6 @@ public class PointServiceTest {
         return new PointEntity(null, pointStatusEnum,amount,now,afterOneYear,memberEntity);
     }
 
-    private List<AvailablePointDto> buildMockAvailablePointDtos(Integer sum,PointDetailEntity pointDetailEntity) {
-        List<AvailablePointDto> dtos = new ArrayList<>();
-
-        dtos.add(this.buildMockAvailablePointDto(sum,pointDetailEntity));
-
-        return dtos;
-    }
-
     private AvailablePointDto buildMockAvailablePointDto(Integer sum,PointDetailEntity pointDetailEntity) {
         return new AvailablePointDto(sum,pointDetailEntity);
     }
@@ -180,9 +227,15 @@ public class PointServiceTest {
         return this.buildMockPointDetail(PointStatusEnum.EARN,pointEntity.getAmount(),pointEntity);
     }
 
+    private PointDetailEntity buildMockUsePointDetail(PointEntity pointEntity,Integer amount) {
+        return this.buildMockPointDetail(PointStatusEnum.USED,amount,pointEntity);
+    }
+
     private PointDetailEntity buildMockPointDetail(PointStatusEnum pointStatusEnum, Integer amount, PointEntity pointEntity) {
         return new PointDetailEntity(null,pointStatusEnum,amount,pointEntity.getActionAt(),pointEntity.getExpireAt(),pointEntity);
     }
+
+
 
     public List<PointEntity> buildMockPoints(Integer size, MemberEntity memberEntity) {
 
@@ -196,6 +249,8 @@ public class PointServiceTest {
 
         return pointEntities;
     }
+
+
 
     public Page<PointEntity> buildMockPointPage(List<PointEntity> points, Pageable pageable, Long totalCount) {
         return new PageImpl<>(points,pageable,totalCount);
