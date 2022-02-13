@@ -12,6 +12,7 @@ import com.musinsa.pointapi.point_detail.repository.projection.AvailablePointDto
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PointDetailService {
@@ -40,10 +41,8 @@ public class PointDetailService {
 
     public PointDetailEntity savePointDetail(SavePointDetailDto pointDetailDto) {
 
-        PointEntity pointEntity = this.pointFindService.findPointById(pointDetailDto.getPointId());
-
         /* INSERT into point_detail */
-        PointDetailEntity pointDetailEntity = pointDetailDto.toEntity(pointEntity);
+        PointDetailEntity pointDetailEntity = pointDetailDto.toEntity();
 
         return this.pointDetailRepository.save(pointDetailEntity);
     }
@@ -52,8 +51,11 @@ public class PointDetailService {
         return this.pointDetailRepository.saveAll(entities);
     }
 
-    public List<PointDetailEntity> saveAllpointDetailTest(List<PointDetailEntity> entities) {
-        return this.pointDetailRepository.saveAll(entities);
+    public List<PointDetailEntity> saveAllpointDetailTest(List<SavePointDetailDto> entities) {
+
+        List<PointDetailEntity> targets = entities.stream().map(SavePointDetailDto::toEntity).collect(Collectors.toList());
+
+        return this.pointDetailRepository.saveAll(targets);
     }
 
     public Integer findTotalPoint(Long memberId) {

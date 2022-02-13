@@ -15,16 +15,16 @@ public class SavePointDetailDto {
 
     private LocalDateTime expireAt;
 
-    private Long pointId;
+    private PointEntity pointEntity;
 
     private PointDetailEntity pointDetailEntity;
 
-    public SavePointDetailDto(PointStatusEnum status, Integer amount, LocalDateTime actionAt, LocalDateTime expireAt, Long pointId, PointDetailEntity pointDetailEntity) {
+    public SavePointDetailDto(PointStatusEnum status, Integer amount, LocalDateTime actionAt, LocalDateTime expireAt, PointEntity pointEntity, PointDetailEntity pointDetailEntity) {
         this.status = status;
         this.amount = amount;
         this.actionAt = actionAt;
         this.expireAt = expireAt;
-        this.pointId = pointId;
+        this.pointEntity = pointEntity;
         this.pointDetailEntity = pointDetailEntity;
     }
 
@@ -60,12 +60,12 @@ public class SavePointDetailDto {
         this.expireAt = expireAt;
     }
 
-    public Long getPointId() {
-        return pointId;
+    public PointEntity getPointEntity() {
+        return pointEntity;
     }
 
-    public void setPointId(Long pointId) {
-        this.pointId = pointId;
+    public void setPointEntity(PointEntity pointEntity) {
+        this.pointEntity = pointEntity;
     }
 
     public PointDetailEntity getPointDetailEntity() {
@@ -76,7 +76,7 @@ public class SavePointDetailDto {
         this.pointDetailEntity = pointDetailEntity;
     }
 
-    public PointDetailEntity toEntity(PointEntity pointEntity) {
+    public PointDetailEntity toEntity() {
 
         PointDetailEntity target = new PointDetailEntity(
                 null,
@@ -84,7 +84,7 @@ public class SavePointDetailDto {
                 this.getAmount(),
                 this.getActionAt(),
                 this.getExpireAt(),
-                pointEntity
+                this.getPointEntity()
         );
 
         target.setPointDetail(pointDetailEntity);

@@ -90,49 +90,39 @@ public class PointService {
         /* 차감이 가능한 포인트를 가져온다. */
         List<AvailablePointDto> availablePoints = this.pointDetailService.findAvailablePoints(memberId);
 
-        List<PointDetailEntity> pointDetailEntities = new ArrayList<>();
+        List<SavePointDetailDto> pointDetailDtos = new ArrayList<>();
 
         /* 먼저 적립된 포인트부터 소모 */
         for (AvailablePointDto point: availablePoints) {
 
             int sum = point.getSum();
 
-            int remain = sum - this.toPositiveNumber(amount);
-
             /* 포인트 소모를 했는데 음수이면 그 다음 적립되었던 포인트도 소모 (선입선출)를 해야한다. */
-            if(remain < 0) {
-                PointDetailEntity pointDetail = new PointDetailEntity(
-                        null,
-                        PointStatusEnum.USED,
-                        this.toNegativeNumber(sum),
-                        savedPointEntity.getActionAt(),
-                        point.getPointDetail().getExpireAt(),
-                        savedPointEntity
-                );
-                pointDetail.setPointDetail(point.getPointDetail());
+            Integer usedAmount = this.getUsedAmount(sum,amount);
 
-                pointDetailEntities.add(pointDetail);
+            pointDetailDtos.add(new SavePointDetailDto(PointStatusEnum.USED,usedAmount,
+                    savedPointEntity.getActionAt(),point.getPointDetail().getExpireAt(),
+                    savedPointEntity,point.getPointDetail()));
 
-                amount += sum;
-
-            } else {
-                PointDetailEntity pointDetail = new PointDetailEntity(
-                        null,
-                        PointStatusEnum.USED,
-                        amount,
-                        savedPointEntity.getActionAt(),
-                        point.getPointDetail().getExpireAt(),
-                        savedPointEntity
-                );
-                pointDetail.setPointDetail(point.getPointDetail());
-                pointDetailEntities.add(pointDetail);
+            /* 지불하려는 amount가 사용가능한 현재 Point를 다 안썼으면 break */
+            if(sum - this.toPositiveNumber(amount) >= 0) {
                 break;
             }
+
+            amount += sum;
         }
 
-        this.pointDetailService.saveAllpointDetail(pointDetailEntities);
+        this.pointDetailService.saveAllpointDetailTest(pointDetailDtos);
 
         return savedPointEntity;
+    }
+
+    private Integer getUsedAmount(Integer availableSum, Integer amount) {
+        Integer remain = availableSum - this.toPositiveNumber(amount);
+
+        // 잔액을 다 사용했다면 사용가능했던 포인트 금액 반환
+        // 다 사용하지 않았다면 사용한 포인트 금액 반환
+        return remain < 0 ? this.toNegativeNumber(availableSum) : amount;
     }
 
     @Transactional
@@ -151,18 +141,12 @@ public class PointService {
             Integer amount = this.toNegativeNumber(dto.getSum());
 
             /* INSERT into point  */
-            PointEntity pointEntity = new PointEntity(
-                    null,
-                    PointStatusEnum.EXPIRED,
-                    amount,
-                    actionAt,
-                    expiredPoint.getExpireAt(),
-                    memberEntity
+            PointEntity savedPointEntity = this.savePoint(
+                    new SavePointDto(PointStatusEnum.EXPIRED,amount,actionAt,expiredPoint.getExpireAt(),memberEntity.getId())
             );
-            PointEntity savedPointEntity = pointRepository.save(pointEntity);
 
             this.pointDetailService.savePointDetail(
-                    new SavePointDetailDto(PointStatusEnum.EXPIRED,amount,actionAt,expiredPoint.getExpireAt(),savedPointEntity.getId(),expiredPoint)
+                    new SavePointDetailDto(PointStatusEnum.EXPIRED,amount,actionAt,expiredPoint.getExpireAt(),savedPointEntity,expiredPoint)
             );
 
             return savedPointEntity;
