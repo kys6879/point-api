@@ -16,6 +16,8 @@ public class ExceptionHandler {
     @org.springframework.web.bind.annotation.ExceptionHandler(value = MissingServletRequestParameterException.class)
     public ResponseEntity<BaseResponse<String>> handleMissingServletRequestParameterException(MissingServletRequestParameterException exception) {
 
+        exception.printStackTrace();
+
         BaseResponse<String> response = new BaseResponse(
                 false,
                 CodeEnum.ERROR_MISSING_PARAMETER,
@@ -27,6 +29,8 @@ public class ExceptionHandler {
 
     @org.springframework.web.bind.annotation.ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
     public ResponseEntity<BaseResponse<String>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+
+        exception.printStackTrace();
 
         BaseResponse<String> response = new BaseResponse(
                 false,
@@ -40,6 +44,8 @@ public class ExceptionHandler {
     @org.springframework.web.bind.annotation.ExceptionHandler(value = NotFoundException.class)
     public ResponseEntity<BaseResponse<String>> handleNotFoundException(NotFoundException exception) {
 
+        exception.printStackTrace();
+
         BaseResponse<String> response = new BaseResponse(
                 false,
                 CodeEnum.ERROR_NOT_FOUND,
@@ -52,6 +58,8 @@ public class ExceptionHandler {
     @org.springframework.web.bind.annotation.ExceptionHandler(value = IllegalArgumentException.class)
     public ResponseEntity<BaseResponse<String>> handleIllegalArgumentException(IllegalArgumentException exception) {
 
+        exception.printStackTrace();
+
         BaseResponse<String> response = new BaseResponse(
                 false,
                 CodeEnum.ERROR_NOT_FOUND,
@@ -63,6 +71,8 @@ public class ExceptionHandler {
 
     @org.springframework.web.bind.annotation.ExceptionHandler(value = NotEnoughPointException.class)
     public ResponseEntity<BaseResponse<String>> handleNotEnoughPointException(NotEnoughPointException exception) {
+
+        exception.printStackTrace();
 
         BaseResponse<String> response = new BaseResponse(
                 false,
