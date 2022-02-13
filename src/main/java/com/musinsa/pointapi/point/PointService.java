@@ -208,8 +208,7 @@ public class PointService {
             throw new NotFoundException("유효기간이 지난 포인트가 없어 만료처리에 실패하였습니다.");
         }
 
-        for (AvailablePointDto dto: expiredPoints) {
-
+        return expiredPoints.stream().map(dto -> {
             PointDetailEntity expiredPoint = dto.getPointDetail();
 
             Integer amount = this.toNegativeNumber(dto.getSum());
@@ -223,7 +222,6 @@ public class PointService {
                     expiredPoint.getExpireAt(),
                     memberEntity
             );
-
             PointEntity savedPointEntity = pointRepository.save(pointEntity);
 
             /* INSERT into point_detail */
@@ -235,14 +233,11 @@ public class PointService {
                     expiredPoint.getExpireAt(),
                     savedPointEntity
             );
+            pointDetailEntity.setPointDetail(expiredPoint);
 
             pointDetailService.savePointDetail(pointDetailEntity);
-        }
-
-        return expiredPoints
-                .stream()
-                .map(pointDto -> pointDto.getPointDetail().getPoint())
-                .collect(Collectors.toList());
+            return savedPointEntity;
+        }).collect(Collectors.toList());
     }
 
 
