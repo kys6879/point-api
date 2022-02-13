@@ -2,11 +2,12 @@ package com.musinsa.pointapi.point;
 
 import com.musinsa.pointapi.common.CommonDateService;
 import com.musinsa.pointapi.member.MemberEntity;
-import com.musinsa.pointapi.member.MemberService;
+import com.musinsa.pointapi.member.service.MemberService;
 import com.musinsa.pointapi.point.repository.PointRepository;
 import com.musinsa.pointapi.point.repository.QPointRepository;
+import com.musinsa.pointapi.point.service.PointService;
 import com.musinsa.pointapi.point_detail.PointDetailEntity;
-import com.musinsa.pointapi.point_detail.PointDetailService;
+import com.musinsa.pointapi.point_detail.serivce.PointDetailService;
 import com.musinsa.pointapi.point_detail.repository.projection.AvailablePointDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PointServiceTest {

@@ -1,6 +1,7 @@
-package com.musinsa.pointapi.point;
+package com.musinsa.pointapi.point.service;
 
 import com.musinsa.pointapi.advice.exception.NotFoundException;
+import com.musinsa.pointapi.point.PointEntity;
 import com.musinsa.pointapi.point.repository.PointRepository;
 import org.springframework.stereotype.Service;
 

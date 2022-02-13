@@ -1,16 +1,18 @@
-package com.musinsa.pointapi.point;
+package com.musinsa.pointapi.point.service;
 
 import com.musinsa.pointapi.advice.exception.NotEnoughPointException;
 import com.musinsa.pointapi.advice.exception.NotFoundException;
 
 import com.musinsa.pointapi.common.CommonDateService; // @TODO static method 서비스로 분리
 import com.musinsa.pointapi.member.MemberEntity;
-import com.musinsa.pointapi.member.MemberService;
+import com.musinsa.pointapi.member.service.MemberService;
+import com.musinsa.pointapi.point.PointEntity;
+import com.musinsa.pointapi.point.PointStatusEnum;
 import com.musinsa.pointapi.point.dto.SavePointDto;
 import com.musinsa.pointapi.point.repository.PointRepository;
 import com.musinsa.pointapi.point.repository.QPointRepository;
 import com.musinsa.pointapi.point_detail.PointDetailEntity;
-import com.musinsa.pointapi.point_detail.PointDetailService;
+import com.musinsa.pointapi.point_detail.serivce.PointDetailService;
 import com.musinsa.pointapi.point_detail.dto.SavePointDetailDto;
 import com.musinsa.pointapi.point_detail.dto.SavePointDetailSelfDto;
 import com.musinsa.pointapi.point_detail.repository.projection.AvailablePointDto;

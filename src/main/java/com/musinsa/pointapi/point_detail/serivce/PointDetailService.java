@@ -1,9 +1,10 @@
-package com.musinsa.pointapi.point_detail;
+package com.musinsa.pointapi.point_detail.serivce;
 
 import com.musinsa.pointapi.member.MemberEntity;
-import com.musinsa.pointapi.member.MemberService;
+import com.musinsa.pointapi.member.service.MemberService;
 import com.musinsa.pointapi.point.PointEntity;
-import com.musinsa.pointapi.point.PointFindService;
+import com.musinsa.pointapi.point.service.PointFindService;
+import com.musinsa.pointapi.point_detail.PointDetailEntity;
 import com.musinsa.pointapi.point_detail.dto.SavePointDetailDto;
 import com.musinsa.pointapi.point_detail.dto.SavePointDetailSelfDto;
 import com.musinsa.pointapi.point_detail.repository.PointDetailRepository;
