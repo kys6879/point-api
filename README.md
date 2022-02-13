@@ -149,8 +149,40 @@ Content-Type : application/json
 #### GetPointResponse
 ```
 {
-    "point": PointDto.model, // PointDto 모델
+    "point": UsedDto.model, // UsedDto 모델,
+    
 }
+```
+
+#### UsedDto
+
+```
+{
+    "id": 9, // 고유번호
+    "status": "USED", // 적립 EARN, 사용 USED, 만료 EXPIRED
+    "amount": 3700, // 사용한 포인트 금액
+    "actionAt": "2022-02-13T22:46:37.751", // 처리시간
+    "expireAt": null, //  만료시간
+    "member": {
+        "id": 1, // 고유번호
+        "email": "apple@example.com", // 이메일 (fake)
+        "password": "1234" // 비밀번호 (fake)
+    },
+    details : [PointDetailDto] // PointDetailDto 모델. 사용한 3700원이 어떤 포인트를 사용했는지.
+},
+```
+
+#### PointDetailDto
+
+```
+{
+  {
+      "id": 3, // 고유번호
+      "amount": 3000, // 포인트 금액
+      "pointStatusEnum": "EARN", // 적립 EARN, 사용 USED, 만료 EXPIRED
+      "actionAt": "2022-01-03T23:10:00" // 처리시간
+  }
+},
 ```
 
 ## 4.5 포인트 만료
