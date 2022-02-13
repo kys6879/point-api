@@ -2,13 +2,17 @@ package com.musinsa.pointapi.point;
 
 import com.musinsa.pointapi.advice.exception.NotEnoughPointException;
 import com.musinsa.pointapi.advice.exception.NotFoundException;
-import com.musinsa.pointapi.common.CommonDateService;
+
+import com.musinsa.pointapi.common.CommonDateService; // @TODO static method 서비스로 분리
 import com.musinsa.pointapi.member.MemberEntity;
 import com.musinsa.pointapi.member.MemberService;
+import com.musinsa.pointapi.point.dto.SavePointDto;
 import com.musinsa.pointapi.point.repository.PointRepository;
 import com.musinsa.pointapi.point.repository.QPointRepository;
 import com.musinsa.pointapi.point_detail.PointDetailEntity;
 import com.musinsa.pointapi.point_detail.PointDetailService;
+import com.musinsa.pointapi.point_detail.dto.SavePointDetailDto;
+import com.musinsa.pointapi.point_detail.dto.SavePointDetailSelfDto;
 import com.musinsa.pointapi.point_detail.repository.projection.AvailablePointDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,14 +39,18 @@ public class PointService {
         this.qPointRepository = qPointRepository;
     }
 
-    public PointEntity findPointById(Long pointId) {
-        return this.pointRepository.findById(pointId).orElseThrow(() -> new NotFoundException("포인트를 찾을 수 없습니다."));
-    }
-
     public Page<PointEntity> findPoints(Long memberId, Pageable pageable) {
         MemberEntity memberEntity = this.memberService.findMemberById(memberId);
 
         return this.qPointRepository.findPointPage(memberEntity.getId(),pageable);
+    }
+
+    public PointEntity savePoint(SavePointDto pointDto) {
+        MemberEntity memberEntity = this.memberService.findMemberById(pointDto.getMemberId());
+
+        /* INSERT into point  */
+        PointEntity pointEntity = pointDto.toEntity(memberEntity);
+        return pointRepository.save(pointEntity);
     }
 
     // 포인트 적립
@@ -55,31 +63,9 @@ public class PointService {
         LocalDateTime actionAt = CommonDateService.getToday();
         LocalDateTime expireAt = CommonDateService.getAfterOneYear(actionAt);
 
-        MemberEntity memberEntity = this.memberService.findMemberById(memberId);
+        PointEntity savedPointEntity = this.savePoint(new SavePointDto(PointStatusEnum.EARN,amount,actionAt,expireAt,memberId));
 
-        /* INSERT into point  */
-        PointEntity pointEntity = new PointEntity(
-                null,
-                PointStatusEnum.EARN,
-                amount,
-                actionAt,
-                expireAt,
-                memberEntity
-        );
-
-        PointEntity savedPointEntity = pointRepository.save(pointEntity);
-
-        /* INSERT into point_detail */
-        PointDetailEntity pointDetailEntity = new PointDetailEntity(
-                null,
-                PointStatusEnum.EARN,
-                amount,
-                actionAt,
-                expireAt,
-                pointEntity
-        );
-
-        pointDetailService.savePointDetail(pointDetailEntity);
+        this.pointDetailService.savePointDetailSelf(new SavePointDetailSelfDto(PointStatusEnum.EARN,amount,actionAt,expireAt,savedPointEntity.getId()));
 
         return savedPointEntity;
     }
@@ -99,12 +85,7 @@ public class PointService {
 
         LocalDateTime actionAt = CommonDateService.getToday();
 
-        MemberEntity memberEntity = this.memberService.findMemberById(memberId);
-
-        /* INSERT into point  */
-        PointEntity pointEntity = new PointEntity(null, PointStatusEnum.USED, amount, actionAt, null, memberEntity);
-
-        PointEntity savedPointEntity = pointRepository.save(pointEntity);
+        PointEntity savedPointEntity = this.savePoint(new SavePointDto(PointStatusEnum.USED,amount,actionAt,null,memberId));
 
         /* 차감이 가능한 포인트를 가져온다. */
         List<AvailablePointDto> availablePoints = this.pointDetailService.findAvailablePoints(memberId);
@@ -113,6 +94,7 @@ public class PointService {
 
         /* 먼저 적립된 포인트부터 소모 */
         for (AvailablePointDto point: availablePoints) {
+
             int sum = point.getSum();
 
             int remain = sum - this.toPositiveNumber(amount);
@@ -123,15 +105,13 @@ public class PointService {
                         null,
                         PointStatusEnum.USED,
                         this.toNegativeNumber(sum),
-                        pointEntity.getActionAt(),
+                        savedPointEntity.getActionAt(),
                         point.getPointDetail().getExpireAt(),
                         savedPointEntity
                 );
                 pointDetail.setPointDetail(point.getPointDetail());
 
-                pointDetailEntities.add(
-                        pointDetail
-                );
+                pointDetailEntities.add(pointDetail);
 
                 amount += sum;
 
@@ -140,7 +120,7 @@ public class PointService {
                         null,
                         PointStatusEnum.USED,
                         amount,
-                        pointEntity.getActionAt(),
+                        savedPointEntity.getActionAt(),
                         point.getPointDetail().getExpireAt(),
                         savedPointEntity
                 );
@@ -155,49 +135,6 @@ public class PointService {
         return savedPointEntity;
     }
 
-
-    /* 사용된 포인트를 취소 */
-    @Transactional
-    @Deprecated
-    public PointEntity cancelPoint(Long pointId) {
-        PointEntity pointEntity = this.findPointById(pointId);
-        PointStatusEnum pointStatus = pointEntity.getStatus();
-
-        if(!this.isUsedStatus(pointStatus)) {
-            throw new IllegalStateException("해당 포인트는 사용된 포인트가 아닙니다. "+pointStatus+"타입 입니다.");
-        }
-
-        /* @TODO 이미 취소처리된 포인트인지 */
-
-        /* INSERT into point  */
-        LocalDateTime actionAt = CommonDateService.getToday();
-
-        PointEntity savedPointEntity = this.pointRepository.save(new PointEntity(
-                null,
-                PointStatusEnum.CANCEL,
-                this.toPositiveNumber(pointEntity.getAmount()),
-                actionAt,
-                pointEntity.getExpireAt(),
-                pointEntity.getMember()
-        ));
-
-        return null;
-
-//        this.pointDetailService.savePointDetail(new PointDetailEntity(
-//                null,
-//                PointStatusEnum.CANCEL,
-//                amount,
-//                actionAt,
-//                expireAt,
-//                pointEntity
-//        ));
-
-
-        // ex ) 100 원 등록
-        // ex ) 50 원 사용
-    }
-
-    // @TODO 만료처리가 여러번됨 픽스필요
     @Transactional
     public List<PointEntity> expirePoint(Long memberId) {
         MemberEntity memberEntity = this.memberService.findMemberById(memberId);
@@ -224,23 +161,13 @@ public class PointService {
             );
             PointEntity savedPointEntity = pointRepository.save(pointEntity);
 
-            /* INSERT into point_detail */
-            PointDetailEntity pointDetailEntity = new PointDetailEntity(
-                    null,
-                    PointStatusEnum.EXPIRED,
-                    amount,
-                    actionAt,
-                    expiredPoint.getExpireAt(),
-                    savedPointEntity
+            this.pointDetailService.savePointDetail(
+                    new SavePointDetailDto(PointStatusEnum.EXPIRED,amount,actionAt,expiredPoint.getExpireAt(),savedPointEntity.getId(),expiredPoint)
             );
-            pointDetailEntity.setPointDetail(expiredPoint);
 
-            pointDetailService.savePointDetail(pointDetailEntity);
             return savedPointEntity;
         }).collect(Collectors.toList());
     }
-
-
 
     private Integer toNegativeNumber(int amount) {
         if(amount > 0) {

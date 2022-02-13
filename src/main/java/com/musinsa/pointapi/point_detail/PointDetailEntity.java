@@ -36,6 +36,16 @@ public class PointDetailEntity {
     @OneToMany(mappedBy = "pointDetail", fetch = FetchType.LAZY)
     private List<PointDetailEntity> pointDetails;
 
+    public PointDetailEntity(Long id, PointStatusEnum status, Integer amount, PointEntity point) {
+        this.id = id;
+        this.status = status;
+        this.amount = amount;
+        this.actionAt = point.getActionAt();
+        this.expireAt = point.getExpireAt();
+        this.point = point;
+        this.pointDetail = this;
+    }
+
     public PointDetailEntity(Long id, PointStatusEnum status, Integer amount, LocalDateTime actionAt, LocalDateTime expireAt, PointEntity point) {
         this.id = id;
         this.status = status;
@@ -43,7 +53,7 @@ public class PointDetailEntity {
         this.actionAt = actionAt;
         this.expireAt = expireAt;
         this.point = point;
-        this.setPointDetail();
+        this.pointDetail = this;
     }
 
     public PointDetailEntity() {
@@ -104,10 +114,6 @@ public class PointDetailEntity {
 
     public void setPointDetail(PointDetailEntity pointDetail) {
         this.pointDetail = pointDetail;
-    }
-
-    public void setPointDetail() {
-        this.pointDetail = this;
     }
 
     public List<PointDetailEntity> getPointDetails() {
