@@ -45,8 +45,6 @@ public class PointServiceTest {
 
     private final Long mockPoint01Id = 1L;
 
-    private final Long mockPointDetail01Id = 1L;
-
     @DisplayName("회원별 포인트 적립/사용 내역 조회")
     @Test
     public void findPointsByMemberIdTest() {
@@ -158,43 +156,6 @@ public class PointServiceTest {
 
         /* 사용된 포인트의 상세정보는 적립했던 금액(원본) 이다.*/
         assertEquals(PointStatusEnum.EARN,usedPoint.getPointDetailEntities().get(0).getStatus());
-    }
-
-    @DisplayName("포인트는 먼저 적립된 순서로 사용한다.")
-    @Test
-    public void firstUsePointTest() {
-        /* Given */
-        Integer amount = 1500;
-        Integer totalPoint = 1500;
-
-        MemberEntity mockMemberEntity = this.buildMockMember01();
-        PointEntity pointEntity = this.buildMockUsePoint(amount,mockMemberEntity);
-
-        /* 현재 잔액 설정 */
-        given(this.pointDetailService.findTotalPoint(mockMemberEntity.getId()))
-                .willReturn(totalPoint);
-
-        /* 1500원 사용 포인트 이력 설정 */
-        given(this.pointRepository.save(any()))
-                .willReturn(pointEntity);
-
-        /* 사용가능한 500포인트, 1000포인트 2개 설정 */
-        List<AvailablePointDto> dtos = new ArrayList<>();
-
-        dtos.add(this.buildMockAvailablePointDto(500,this.buildMockEarnPointDetail(pointEntity)));
-        dtos.add(this.buildMockAvailablePointDto(1000,this.buildMockEarnPointDetail(pointEntity)));
-
-        given(this.pointDetailService.findAvailablePoints(mockMemberEntity.getId()))
-                .willReturn(dtos);
-
-        /* When */
-        PointEntity usedPoint = this.pointService.usePoint(amount,mockMemberEntity.getId());
-
-        assertEquals(pointEntity.getAmount(),usedPoint.getAmount());
-        assertEquals(pointEntity.getStatus(),usedPoint.getStatus());
-        assertEquals(pointEntity.getActionAt(),usedPoint.getActionAt());
-        assertEquals(pointEntity.getExpireAt(),usedPoint.getExpireAt());
-        assertEquals(amount,usedPoint.getAmount());
     }
 
     public MemberEntity buildMockMember01() {

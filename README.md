@@ -176,12 +176,10 @@ Content-Type : application/json
 
 ```
 {
-  {
-      "id": 3, // 고유번호
-      "amount": 3000, // 포인트 금액
-      "pointStatusEnum": "EARN", // 적립 EARN, 사용 USED, 만료 EXPIRED
-      "actionAt": "2022-01-03T23:10:00" // 처리시간
-  }
+    "id": 3, // 고유번호
+    "amount": 3000, // 포인트 금액
+    "pointStatusEnum": "EARN", // 적립 EARN, 사용 USED, 만료 EXPIRED
+    "actionAt": "2022-01-03T23:10:00" // 처리시간
 },
 ```
 
