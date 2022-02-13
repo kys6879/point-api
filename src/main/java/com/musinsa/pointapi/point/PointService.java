@@ -71,7 +71,6 @@ public class PointService {
     }
 
     // 포인트 사용
-    // TODO 단일책임원칙 리팩토링
     @Transactional
     public PointEntity usePoint(Integer amount, Long memberId) {
 
@@ -112,7 +111,7 @@ public class PointService {
             amount += sum;
         }
 
-        this.pointDetailService.saveAllpointDetailTest(pointDetailDtos);
+        this.pointDetailService.saveAllpointDetail(pointDetailDtos);
 
         return savedPointEntity;
     }

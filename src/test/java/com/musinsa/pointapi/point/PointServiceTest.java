@@ -7,6 +7,7 @@ import com.musinsa.pointapi.point.repository.PointRepository;
 import com.musinsa.pointapi.point.repository.QPointRepository;
 import com.musinsa.pointapi.point_detail.PointDetailEntity;
 import com.musinsa.pointapi.point_detail.PointDetailService;
+import com.musinsa.pointapi.point_detail.repository.projection.AvailablePointDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -83,7 +84,6 @@ public class PointServiceTest {
         Integer amount = 1000; // 1000 Point 적립
         MemberEntity mockMemberEntity = this.buildMockMember01();
         PointEntity mockPointEntity = this.buildMockEarnPoint01(amount,mockMemberEntity);
-        PointDetailEntity mockPointDetailEntity = this.buildMockPointDetail01(mockPointEntity);
 
         given(this.memberService.findMemberById(mockMember01Id))
                 .willReturn(mockMemberEntity);
@@ -91,22 +91,56 @@ public class PointServiceTest {
         given(this.pointRepository.save(any()))
                 .willReturn(mockPointEntity);
 
-        given(this.pointDetailService.savePointDetail(any()))
-                .willReturn(mockPointDetailEntity);
+        given(this.pointDetailService.savePointDetailSelf(any())).willReturn(any());
 
         /* When */
-        PointEntity pointEntity = this.pointService.earnPoint(amount,mockMemberEntity.getId());
+        PointEntity earnedPoint = this.pointService.earnPoint(amount,mockMemberEntity.getId());
 
         /* Then */
-        assertEquals(mockPointEntity.getId(),pointEntity.getId());
-        assertEquals(mockPointEntity.getStatus(),pointEntity.getStatus());
-        assertEquals(mockPointEntity.getAmount(),pointEntity.getAmount());
-        assertEquals(mockPointEntity.getActionAt(),pointEntity.getActionAt());
-        assertEquals(mockPointEntity.getExpireAt(),pointEntity.getExpireAt());
-        assertEquals(mockPointEntity.getMember().getId(),pointEntity.getMember().getId());
+        assertEquals(mockPointEntity.getId(),earnedPoint.getId());
+        assertEquals(mockPointEntity.getStatus(),earnedPoint.getStatus());
+        assertEquals(mockPointEntity.getAmount(),earnedPoint.getAmount());
+        assertEquals(mockPointEntity.getActionAt(),earnedPoint.getActionAt());
+        assertEquals(mockPointEntity.getExpireAt(),earnedPoint.getExpireAt());
+        assertEquals(mockPointEntity.getMember().getId(),earnedPoint.getMember().getId());
 
-        assertEquals(amount,pointEntity.getAmount());
+        assertEquals(amount,earnedPoint.getAmount());
     }
+
+    @DisplayName("포인트 사용")
+    @Test
+    public void usePointTest() {
+        /* Given */
+        Integer amount = 1500;
+        Integer totalPoint = 10000;
+
+        MemberEntity mockMemberEntity = this.buildMockMember01();
+        PointEntity pointEntity = this.buildMockUsePoint(amount,mockMemberEntity);
+
+        /* 현재 잔액 설정 */
+        given(this.pointDetailService.findTotalPoint(mockMemberEntity.getId()))
+                .willReturn(totalPoint);
+
+        /* 1500원 사용 포인트 이력 설정 */
+        given(this.pointRepository.save(any()))
+                .willReturn(pointEntity);
+
+        /* 사용가능한 10000포인트 1개 설정 */
+        given(this.pointDetailService.findAvailablePoints(mockMemberEntity.getId()))
+                .willReturn(this.buildMockAvailablePointDtos(
+                        totalPoint,
+                        this.buildMockEarnPointDetail(pointEntity)));
+
+        /* When */
+        PointEntity usedPoint = this.pointService.usePoint(amount,mockMemberEntity.getId());
+
+        assertEquals(pointEntity.getAmount(),usedPoint.getAmount());
+        assertEquals(pointEntity.getStatus(),usedPoint.getStatus());
+        assertEquals(pointEntity.getActionAt(),usedPoint.getActionAt());
+        assertEquals(pointEntity.getExpireAt(),usedPoint.getExpireAt());
+        assertEquals(amount,usedPoint.getAmount());
+    }
+
 
     public MemberEntity buildMockMember01() {
         return new MemberEntity(mockMember01Id,"mock01@example.com","1234");
@@ -119,8 +153,35 @@ public class PointServiceTest {
         return new PointEntity(mockPoint01Id,PointStatusEnum.EARN,amount,now,afterOneYear,memberEntity);
     }
 
-    public PointDetailEntity buildMockPointDetail01(PointEntity pointEntity) {
-        return new PointDetailEntity(mockPointDetail01Id,pointEntity.getStatus(),pointEntity.getAmount(),pointEntity.getActionAt(),pointEntity.getExpireAt(),pointEntity);
+    private PointEntity buildMockUsePoint(Integer amount, MemberEntity memberEntity) {
+        return this.buildMockPoint(PointStatusEnum.USED,amount,memberEntity);
+    }
+
+    private PointEntity buildMockPoint(PointStatusEnum pointStatusEnum, Integer amount, MemberEntity memberEntity) {
+        LocalDateTime now = CommonDateService.getToday();
+        LocalDateTime afterOneYear = CommonDateService.getAfterOneYear(now);
+
+        return new PointEntity(null, pointStatusEnum,amount,now,afterOneYear,memberEntity);
+    }
+
+    private List<AvailablePointDto> buildMockAvailablePointDtos(Integer sum,PointDetailEntity pointDetailEntity) {
+        List<AvailablePointDto> dtos = new ArrayList<>();
+
+        dtos.add(this.buildMockAvailablePointDto(sum,pointDetailEntity));
+
+        return dtos;
+    }
+
+    private AvailablePointDto buildMockAvailablePointDto(Integer sum,PointDetailEntity pointDetailEntity) {
+        return new AvailablePointDto(sum,pointDetailEntity);
+    }
+
+    private PointDetailEntity buildMockEarnPointDetail(PointEntity pointEntity) {
+        return this.buildMockPointDetail(PointStatusEnum.EARN,pointEntity.getAmount(),pointEntity);
+    }
+
+    private PointDetailEntity buildMockPointDetail(PointStatusEnum pointStatusEnum, Integer amount, PointEntity pointEntity) {
+        return new PointDetailEntity(null,pointStatusEnum,amount,pointEntity.getActionAt(),pointEntity.getExpireAt(),pointEntity);
     }
 
     public List<PointEntity> buildMockPoints(Integer size, MemberEntity memberEntity) {

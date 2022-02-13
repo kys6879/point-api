@@ -47,11 +47,7 @@ public class PointDetailService {
         return this.pointDetailRepository.save(pointDetailEntity);
     }
 
-    public List<PointDetailEntity> saveAllpointDetail(List<PointDetailEntity> entities) {
-        return this.pointDetailRepository.saveAll(entities);
-    }
-
-    public List<PointDetailEntity> saveAllpointDetailTest(List<SavePointDetailDto> entities) {
+    public List<PointDetailEntity> saveAllpointDetail(List<SavePointDetailDto> entities) {
 
         List<PointDetailEntity> targets = entities.stream().map(SavePointDetailDto::toEntity).collect(Collectors.toList());
 
